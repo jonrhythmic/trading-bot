@@ -1,1 +1,0 @@
-export const AUTH = "Testing login features or something! So how do we change this into something useful?! Lets find out...";

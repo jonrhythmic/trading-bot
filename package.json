@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Test trading bot to be used on Graviex.net",
-  "main": "server.js",
+  "main": "bot.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon bot.js"
   },
   "keywords": [
     "automation",
@@ -19,6 +19,9 @@
     "nodemon": "^2.0.6"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "fs": "^0.0.1-security",
+    "ini": "^1.3.7",
+    "node-fetch": "^2.6.1"
   }
 }
