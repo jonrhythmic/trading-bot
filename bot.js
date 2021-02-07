@@ -32,7 +32,12 @@ class Bot {
         };
     */
     signature() { 
-        return crypto.createHmac('sha256', config.SECRET_KEY).digest('hex');
+        let url = "https://graviex.net/webapi/v3/orders";
+        let access_key = config.ACCESS_KEY;
+        let secret_key = config.SECRET_KEY;
+        let tonce = this.tonce();
+        let request = url + "&access_key=" + access_key + "&tonce=" + tonce;
+        return crypto.createHmac('sha256', config.SECRET_KEY).update(request).digest('hex');
     }
     execute_command() {
         // https://www.npmjs.com/package/node-fetch
@@ -96,6 +101,8 @@ class Bot {
     // message = 'POST|/webapi/v3/orders|' + request
     bot.query("POST", "orders", "markets=giobtc&price=0.00000125&side=sell", "1");
     //bot.execute_command("GET", "markets");
+    let request = bot.signature();
+    console.log(request);
 })();
 
 // Add generic middleware to express
