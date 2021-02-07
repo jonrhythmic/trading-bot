@@ -1,0 +1,23 @@
+						##########
+						|  TODO  |
+						##########
+
+- Make a function that cancels all GIO bids around every new hour to maximize dividense
+- Keep track of the price of each coin (24h, 7days, 1mo, alltime) to "predict" future outcomes
+- Scrape news sites and message boards for good / bad news to get in or out before catastrophy occures 
+- Make a setTimeout func that checks if users has any loose assets, and verify that the user intends to trade then (longterm HODL, daytrading, other strategies)
+- 
+
+
+    /* bid, sell, cancel, cancelAll, etc */
+    order(requestType) {}
+    // Select which pair to perform action on
+    pair(param1, param2) {}
+    // Select which action to execute
+    action(cmd) {}
+    /* bullish, bearish, sideways, highhand, week, month, 1k, 4k */
+    strategy() { console.log("Applying trading strategy") }
+    /* TEST => startup, runtime, close, VERIFY => --- */    
+    settings() { console.log("Applying settings") }
+    /* startup, runtime, shutdown */
+    status(res) { if (res.ok) /* res.status >= 200 && res.status < 300 */ {return res;} else {throw MyCustomError(res.message, res.code)} }
