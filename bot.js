@@ -15,42 +15,31 @@ class Bot {
         this.acesss_key = config.ACCESS_KEY;
         this.secret_key = config.SECRET_KEY;
     }
-    // Should this be a getter?
     tonce() { 
         return new Date().getTime(); 
     }
-    // Should this be a getter?
     signature() {
-        /*
-            MAYBE YOU SHOULD TRY THIS NPM PACKAGE INSTEAD???
-            https://www.npmjs.com/package/config.ini
-        */
-
-        /* 
-            let hash = crypto.createHmac('sha256', secret_key).toString('hex');
-            let request = `${url}?access_key=${access_key}&tonce=${tonce}&signature=${hash}`;
-            return request;
-        */
-        // request = 'access_key=' + access_key + '&market=giobtc&price=0.000000042&side=sell' + '&tonce=' + epoch_time + '&volume=100.0'
-        // message = 'POST|/webapi/v3/orders|' + request
-        let url = "https://graviex.net/webapi/v3/orders";
-        let access_key = config.ACCESS_KEY;
-        let secret_key = config.SECRET_KEY;
-        let tonce = this.tonce();
-        let market = 'giobtc';
-        let price = 0.00000125;
-        let amount = 1.0;
+        const url = "https://graviex.net/webapi/v3/orders";
+        const access_key = config.ACCESS_KEY;
+        const secret_key = config.SECRET_KEY;
+        const tonce = this.tonce();
+        const market = 'giobtc';
+        const price = 0.00000125;
+        const side = 'sell';
+        const amount = 100.0;
         
-        let hash = crypto.createHmac('sha256', config.SECRET_KEY).digest('hex');
-        let request = `${url}?access_key=${access_key}&tonce=${tonce}&market=${market}&price=${price}&volume=${amount}&signature=${hash}`;
+        const request = `access_key=${access_key}&market=${market}&price=${price}&side=${side}&tonce=${tonce}&volume=${amount}`;
+        const message = 'POST|/webapi/v3/orders|' + request;
+        const signature = crypto.createHmac('sha256', secret_key).update(message).digest('hex');
         
-        return request;
-        // let url = "https://graviex.net/webapi/v3/orders";
-        // let access_key = config.ACCESS_KEY;
-        // let secret_key = config.SECRET_KEY;
-        // let tonce = this.tonce();
-        // let request = url + "&access_key=" + access_key + "&tonce=" + tonce;
-        // return crypto.createHmac('sha256', config.SECRET_KEY).update(request).digest('hex');
+        fetch(url + "?" + request + "&signature=" + signature, {
+            method: 'POST',
+            body: null,
+            header: {'Content-Type': 'application/json'}
+        })
+        .then(res => res.json())
+        .then(res => console.log(res))
+        .catch(error => console.log(error));
     }
     execute_command() {
         // https://www.npmjs.com/package/node-fetch
@@ -101,20 +90,10 @@ class Bot {
         console.warn("Config.ini: Missing access_key or wrong access_key");
     } else if (config.SECRET_KEY === '') 
     {
-        console.log("Config.ini: " + "%c", "color: red;" + "Missing secret_key or wrong secret_key");
+        console.warn("Config.ini: " + "%c", "color: red;" + "Missing secret_key or wrong secret_key");
     }
-
-    // Testing that the query function returns something useful
-    //bot.query("GET", "markets", "cool=story");
-    // request = 'access_key=' + access_key + '&market=giobtc&price=0.000000042&side=sell' + '&tonce=' + epoch_time + '&volume=100.0'
-    // message = 'POST|/webapi/v3/orders|' + request
-    console.log(config.ACCESS_KEY);
-    console.log(config.SECRET_KEY);
-    //bot.query("POST", "orders", "market=giobtc&price=0.00000125&side=sell", "1");
-    //bot.execute_command();
+    
     let request = bot.signature();
-    console.log(request);
-    bot.signature();
 })();
 
 // Add generic middleware to express

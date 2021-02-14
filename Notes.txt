@@ -10,6 +10,7 @@
 - Consider using const response = await fetch('...') instead of the current way
 - Should the fetch()s be wrapped in a series of if-else if? 
 - Publish the bot to Showoff Saturday in r/javascript
+- Add a way to check daily volume and change in price for any tickers the user is watching
 
     /* bid, sell, cancel, cancelAll, etc */
     order(
