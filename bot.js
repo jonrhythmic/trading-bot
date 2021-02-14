@@ -1,7 +1,7 @@
 import express from 'express';
 import ini from 'ini';
 import fs from 'fs';
-import crypto from 'crypto';
+import crypto, { sign } from 'crypto';
 import fetch from 'node-fetch';
 // Import the bot configurations
 const config = ini.parse(fs.readFileSync("./config.ini", "utf-8"));
@@ -32,14 +32,16 @@ class Bot {
         const message = 'POST|/webapi/v3/orders|' + request;
         const signature = crypto.createHmac('sha256', secret_key).update(message).digest('hex');
         
-        fetch(url + "?" + request + "&signature=" + signature, {
-            method: 'POST',
-            body: null,
-            header: {'Content-Type': 'application/json'}
-        })
-        .then(res => res.json())
-        .then(res => console.log(res))
-        .catch(error => console.log(error));
+        // fetch(url + "?" + request + "&signature=" + signature, {
+        //     method: 'POST',
+        //     body: null,
+        //     header: {'Content-Type': 'application/json'}
+        // })
+        // .then(res => res.json())
+        // .then(res => console.log(res))
+        // .catch(error => console.log(error));
+        
+        // return signature;
     }
     execute_command() {
         // https://www.npmjs.com/package/node-fetch
@@ -92,7 +94,7 @@ class Bot {
     {
         console.warn("Config.ini: " + "%c", "color: red;" + "Missing secret_key or wrong secret_key");
     }
-    
+
     let request = bot.signature();
 })();
 
