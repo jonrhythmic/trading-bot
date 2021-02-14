@@ -6,11 +6,15 @@
 - Keep track of the price of each coin (24h, 7days, 1mo, alltime) to "predict" future outcomes
 - Scrape news sites and message boards for good / bad news to get in or out before catastrophy occures 
 - Make a setTimeout func that checks if users has any loose assets, and verify that the user intends to trade then (longterm HODL, daytrading, other strategies)
-- 
-
+- Read up on getters / setters and consider using them!
+- Consider using const response = await fetch('...') instead of the current way
+- Should the fetch()s be wrapped in a series of if-else if? 
+- Publish the bot to Showoff Saturday in r/javascript
 
     /* bid, sell, cancel, cancelAll, etc */
-    order(requestType) {}
+    order(
+	pair/ticker, requestType /buy,sell, cancel,cancelAll
+	amount, price) {}
     // Select which pair to perform action on
     pair(param1, param2) {}
     // Select which action to execute
@@ -21,3 +25,6 @@
     settings() { console.log("Applying settings") }
     /* startup, runtime, shutdown */
     status(res) { if (res.ok) /* res.status >= 200 && res.status < 300 */ {return res;} else {throw MyCustomError(res.message, res.code)} }
+
+EXAMPLE OF README.MD WITH METAINFO REGARDING STATUS: 
+- https://raw.githubusercontent.com/psf/black/master/README.md
