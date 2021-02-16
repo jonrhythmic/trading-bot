@@ -11,6 +11,13 @@
 - Should the fetch()s be wrapped in a series of if-else if? 
 - Publish the bot to Showoff Saturday in r/javascript
 - Add a way to check daily volume and change in price for any tickers the user is watching
+- Write a function that checks the real-time price and current buy side price to put your bids on top
+- Read up on Node.js process.exit(1) and consider writing a try-catch block
+- You should consider a 'version.json' file to keep track of which version user uses. (Too easy to hack?)
+- Make a util.js, tickers.js to keep track of utility function (curr. daily volume, strategies, etc) and tickers to focus on or avoid
+- Make a function that allows canceling a spesific of all trades for a spesific ticker-pair
+- Add ANSI colors to output to clearly make errors stand out (see ansi.txt)
+- Make a trade history register (stored in a file) to be able to track order status and history
 
     /* bid, sell, cancel, cancelAll, etc */
     order(
@@ -20,7 +27,7 @@
     pair(param1, param2) {}
     // Select which action to execute
     action(cmd) {}
-    /* bullish, bearish, sideways, highhand, week, month, 1k, 4k */
+    /* bullish, bearish, squeeze (take sell of platform), sideways, highhand, week, month, 1k, 4k */
     strategy() { console.log("Applying trading strategy") }
     /* TEST => startup, runtime, close, VERIFY => --- */    
     settings() { console.log("Applying settings") }
