@@ -41,74 +41,49 @@ class Bot {
             // console.log(obj instanceof Bot);            // true
             // console.log(obj instanceof constructor);    // true
             // If a finally returns a value it becomes the return value of the entire try-catch-finally block regardless of any return from try-catch
-            return console.log("version <0. 0. 0>", "\x1b[35m", "alpha", "\x1b[0m"); // TODO: Add a versoning system?
+            return console.log("version <0. 0. 0>", "\x1b[35m", "alpha", "\x1b[0m"); 
+            // TODO: Add a versoning system?
         }
     }
     execute_command(callback, args) { 
-        callback.apply(this, args);
-
-        const { action, pair, price, amount } = order(args); // This needs further reading
-        let opt1 = action;
-        let opt2 = pair;
-        let opt3 = price;
-        let opt4 = amount; 
-        console.log("Returned from execute_command()", action, pair, price, amount);
-
-        // https://www.npmjs.com/package/node-fetch
-        // fetch('https://graviex.net/webapi/v3/markets/', {
-        //         method: 'GET', 
-        //         //body: 'body',
-        //         header: {'Content-Type': 'application/json'}
-        //     })
-        //     .then(res => res.json())
-        //     .then(res => console.log(res))
-        //     .catch(error => console.log(error.code, error.message));
-
-        // fetch(url + "?" + request + "&signature=" + signature, {
-        //     method: 'POST',
-        //     body: null,
-        //     header: {'Content-Type': 'application/json'}
-        // })
-        // .then(res => res.json())
-        // .then(res => console.log(res))
-        // .catch(err => console.log(err));
+        let result = callback.apply(this, args);
+        const url = 'https://graviex.net/webapi/v3/';
+        
+        if (result.valid === true) {
+            let action = result.action;
+            let pair = result.pair;
+            let price = result.price;
+            let amount = result.amount; 
+            let method = result.method;
+            let uri = result.uri;
+            let side = result.side;
+            let token = this.signature(method, uri, pair, side, price, amount);
+            let request = token.request;
+            let signature = token.signature;
+            
+            fetch(url + uri + "?" + request + "&signature=" + signature, {
+                method: method,
+                body: null,
+                header: {'Content-Type': 'application/json'}
+            })
+            .then(res => res.json())
+            .then(res => console.log(res))
+            .catch(err => console.log(err));
+        } 
+        else if (result.valid === false) {
+            console.log("Invalid input params");
+        }
     }
     tonce() { return new Date().getTime(); }
-    signature() {
+    signature(method, uri, pair, side, price, amount) {
         const url = "https://graviex.net/webapi/v3/orders";
         const tonce = this.tonce();
-        const market = 'giobtc';
-        const price = 0.00000125;
-        const side = 'sell';
-        const amount = 100.0;
         
-        const request = `access_key=${config.ACCESS_KEY}&market=${market}&price=${price}&side=${side}&tonce=${tonce}&volume=${amount}`;
-        const message = 'POST|/webapi/v3/orders|' + request;
+        const request = `access_key=${config.ACCESS_KEY}&market=${pair}&price=${price}&side=${side}&tonce=${tonce}&volume=${amount}`;
+        const message = `${method}|/webapi/v3/${uri}|` + request;
         const signature = crypto.createHmac('sha256', config.SECRET_KEY).update(message).digest('hex');
                 
-        return signature;
-    }
-    query(requestType, uri, extras="", amount="") {
-        let url = "https://graviex.net/webapi/v3/" + uri;
-        let tonce = this.tonce();
-        let signature = this.signature();
-        let options; 
-        let volume;
-        if (extras === "") {
-            options = "";
-        } 
-        else if (extras !== "") {
-            options = "&" + extras;
-        }
-        if (amount === "") {
-            volume = "";
-        } 
-        else if (amount !== "") {
-            volume = "&volume=" + amount;
-        }
-        
-        let payload = requestType + " " + url + "?access_key=" + config.ACCESS_KEY + options + "&tonce=" + tonce + volume + "&signature=" + signature;
-        console.log(payload);
+        return { signature, request };
     }
 };
 
@@ -119,31 +94,39 @@ class Bot {
     // Determine if bot is configured correctly
     bot.initialize(bot);
 
-    let request = bot.signature();
-    console.log(request);
-
+    // Testing "buy" order
     bot.execute_command(
         order, 
         [
             "buy", 
-            "ethltc", 
-            0.0125, 
-            0.0025
+            "giobtc", 
+            0.00000070, 
+            100
         ]
     );
 
-    bot.execute_command(
-        order, 
-        [
-            "sell", 
-            "bchdoge", 
-            "current", 
-            "all"
-        ]
-    );
+    // Testing "sell" order
+    // bot.execute_command(
+    //     order, 
+    //     [
+    //         "sell", 
+    //         "giobtc", 
+    //         0.00000125, 
+    //         100
+    //     ]
+    // );
+
+    // Testing an "invalid" order
+    // bot.execute_command(
+    //     order, 
+    //     [
+    //         "invest", 
+    //         "bchdoge", 
+    //         "current", 
+    //         "all"
+    //     ]
+    // );
     
-    //bot.order("sell", "giobtc", 0.0000125, 100);
-
     // There should be a do-while loop here ??
 })();
 
@@ -163,17 +146,29 @@ app.get('/', (req, res) => {
 
 app.listen(PORT || 3000);
 
-// order("buy", "giobtc", 0.0000125, 100)
 function order(action, pair, price, amount) {
-    console.log("Order:", action, pair, price, amount);
-    console.log(typeof action, typeof pair, typeof amount, typeof price);
+    let valid = false;
+    let method = '';
+    let uri = '';
+    let side = '';
 
-    return ({ 
-        action, 
-        pair, 
-        price, 
-        amount 
-    });
+    if (action === "sell") {
+        valid = true;
+        method = 'POST';
+        uri = 'orders';
+        side = 'sell';
+    } 
+    else if (action === "buy") {
+        valid = true;
+        method = 'POST';
+        uri = 'orders';
+        side = 'buy';
+    }
+    else {
+        console.log("Invalid order action");
+    }
+    
+    return valid ? ({ valid, action, pair, price, amount, method, uri, pair, side }) : valid;    
 }
 
 // Error logging

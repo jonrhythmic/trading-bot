@@ -2,7 +2,7 @@
   "name": "trading-bot",
   "version": "1.0.0",
   "type": "module",
-  "description": "Test trading bot to be used on Graviex.net",
+  "description": "Trading bot for https://graviex.net/",
   "main": "bot.js",
   "scripts": {
     "start": "nodemon bot.js"
@@ -11,6 +11,7 @@
     "automation",
     "bot",
     "trading",
+    "cryptocurrencies",
     "tool"
   ],
   "author": "Jon A. Grenness",
