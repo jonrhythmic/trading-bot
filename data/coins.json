@@ -1,0 +1,78 @@
+[
+    { 
+        "name": "Ethereum",
+        "id": "eth"
+    },
+    {
+        "name": "Bitcoin",
+        "id": "btc"
+    },
+    {
+        "name": "Bitcoin Cash",
+        "id": "bch"
+    },
+    {
+        "name": "Litecoin", 
+        "id": "ltc"
+    }, 
+    {
+        "name": "Dogecoin",
+        "id": "doge"
+    },
+    {
+        "name": "Zcash",
+        "id": "zec"
+    },
+    {
+        "name": "Dashcoin",
+        "id": "dash"
+    },
+    {
+        "name": "Komodo",
+        "id": "kmd"
+    },
+    {
+        "name": "Tether",
+        "id": "usdt"
+    },
+    {
+        "name": "US dollar",
+        "id": "usd"
+    },
+    {
+        "name": "Euro",
+        "id": "eur"
+    },
+    {
+        "name": "Graviocoin",
+        "id": "gio"
+    },
+    {
+        "name": "Ravencoin",
+        "id": "rvn"
+    },
+    {
+        "name": "Monero",
+        "id": "xmr"
+    },
+    {
+        "name": "Zeroonecoin",
+        "id": "zoc"
+    },
+    {
+        "name": "Digibyte",
+        "id": "dgb"
+    },
+    {
+        "name": "Esport Betting coin",
+        "id": "esbc"
+    },
+    {
+        "name": "Verge",
+        "id": "xvg"
+    }, 
+    {
+        "name": "PivX", 
+        "id": "pivx"
+    }
+]

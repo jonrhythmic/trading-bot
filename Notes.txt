@@ -1,8 +1,33 @@
+					      ##############
+					      |  MAINLOOP  |
+					      ##############
+
+- Generate an setInterval to return a callback ( *** check the max amount of calls to the API graviex allows *** )
+- Plan out a scheduler and a job queue function 
+- Plan out a post-processing method to record and display the details
+- Create a configuration-sheet in html the user easily can configure the bot and it's focuspoints
+- Make a function that reads the in demand coins and finds markets containing coin1 / coin2 or coin2 / coin1 markets 
+- It's not possible to get user balance or minimum amount for trade pr coin, so make a balance.js and update it using trade history :D
+- Implement Coingecko API to get realtime price of each coin 
+- Consider generating a new deposit address and scan incoming transactions + trade history to keep an est. balance.
+
+- Strategies: 
+*** Guestimates: 
+    - top-5 coins will increase +10% from live price, and drop -15% from top pr week over and over
+    - low marketcap altcoin will drop -25% and gain +7% from bottom over and over
+    - popular altcoins will increase 10% and drop -15% and run sideways most of the time
+*** Type of trader: diversify, maximalist, 
+*** Per coin type: fish (one of many, small investments), dolphin (pump and dump), whale (tradeintensive highhand, longterm hodler)
+*** Market strategies: bearish (focus on stablecoins vs diversified trading), bullish (focus on diversifying), sideways ()
+*** Set a goal for trading and divide into percent to trade pr option: highhand, week, month, 1k (+85% - +100%), 4k (+100% - 1000%). Base the percent gained on both increase in coin value and increase in amount hodl'd
+- Longterm project: implement the 5 common trading patterns, and make a pseudo analyzis of what the usual outcome is.
+- CME gaps? Are they vital to keep tabs on?
+
 						##########
 						|  TODO  |
 						##########
 
-- Make a function that cancels all GIO bids around every new hour to maximize dividense
+- Make a function that cancels all GIO bids around every new hour to maximize dividens
 - Keep track of the price of each coin (24h, 7days, 1mo, alltime) to "predict" future outcomes
 - Scrape news sites and message boards for good / bad news to get in or out before catastrophy occures 
 - Make a setTimeout func that checks if users has any loose assets, and verify that the user intends to trade then (longterm HODL, daytrading, other strategies)
@@ -18,6 +43,13 @@
 - Make a function that allows canceling a spesific of all trades for a spesific ticker-pair
 - Add ANSI colors to output to clearly make errors stand out (see ansi.txt)
 - Make a trade history register (stored in a file) to be able to track order status and history
+- Make a balance() to retrieve your balance stored on graivex, show available and inOrders.
+- Make a MainLoop the uses setInterval(() => {}, MAX_AMOUNT_OF_CONNECTIONS)
+- Research if you can collect faucet using the API
+- Implement an option to select current (realtime) price and place a buy / sell based on it in order()
+- Implement an option to generate an "all" coins dump strategy for unwanted coins. Should not generate loses, so handle it
+- Implement a scraper for /r/WallStreetBets to get on the hype early?
+- Implement some kind of strategy based on realtime data, bullish = HODL top 5, bearish = HODL stablecoins, sideways = +/-5%
 
     /* bid, sell, cancel, cancelAll, etc */
     order(
