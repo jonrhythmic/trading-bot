@@ -3,10 +3,7 @@ import ini from 'ini';
 import fs from 'fs';
 import crypto from 'crypto';
 import fetch from 'node-fetch';
-import market from './core/market.js';
-import { brotliCompress } from 'zlib';
-//import * as coins from './data/coins.json';
-// import terminate from './core/utils.js';
+import market from './core/market.js';;
 // Import the bot configurations
 const config = ini.parse(fs.readFileSync("./config.ini", "utf-8"));
 // Application configurations
@@ -154,15 +151,11 @@ class Bot {
                     // trading pairs vs stablecoins like USDT
                     case 'stable':
                         break;
-                    // trading pairs vs crypto with max cap like BTC
+                    // trading pairs vs crypto with limited max circulation like BTC
                     case 'volatile':
                         break;
-                    // trading pairs vs crypto with endless cap like DOGE
+                    // trading pairs vs crypto with endless max circulation like DOGE
                     case 'semivolatile':
-                        break;
-                    // emit the results from current iteration
-                    case 'runningWild':
-                        process.stdout.write("Another iteration...\r");
                         break;
                     default:
                         console.log(`Current iteration yealded x new buy / sells, [...]`);
