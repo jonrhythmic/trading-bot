@@ -1,4 +1,13 @@
 					      ##############
+					      |   AGENDA   |
+					      ##############
+
+- Track "recent trades" to make sure to be able to send new money into the queue.
+- Find out if you add bchdoge and ensure that the price is correct!
+- IMPLEMENT THE STRATEGY TO BE USED TO DETERMINE WHAT TO DO IN THE BOT (percent gain / lower + current trend: bearish / bullish / sideways / hodl)
+- Make sure you test the correct base_unit / quote_unit before finding the price! Otherwise you're f***ed
+
+					      ##############
 					      |  MAINLOOP  |
 					      ##############
 
@@ -6,12 +15,11 @@
 - Plan out a scheduler and a job queue function 
 - Plan out a post-processing method to record and display the details
 - Create a configuration-sheet in html the user easily can configure the bot and it's focuspoints
-- Make a function that reads the in demand coins and finds markets containing coin1 / coin2 or coin2 / coin1 markets 
 - It's not possible to get user balance or minimum amount for trade pr coin, so make a balance.js and update it using trade history :D
-- Implement Coingecko API to get realtime price of each coin 
 - Consider generating a new deposit address and scan incoming transactions + trade history to keep an est. balance.
 
 - Strategies: 
+*** Divide the various coins into 'stable' or 'volatile'
 *** Guestimates: 
     - top-5 coins will increase +10% from live price, and drop -15% from top pr week over and over
     - low marketcap altcoin will drop -25% and gain +7% from bottom over and over
@@ -19,14 +27,18 @@
 *** Type of trader: diversify, maximalist, 
 *** Per coin type: fish (one of many, small investments), dolphin (pump and dump), whale (tradeintensive highhand, longterm hodler)
 *** Market strategies: bearish (focus on stablecoins vs diversified trading), bullish (focus on diversifying), sideways ()
-*** Set a goal for trading and divide into percent to trade pr option: highhand, week, month, 1k (+85% - +100%), 4k (+100% - 1000%). Base the percent gained on both increase in coin value and increase in amount hodl'd
-- Longterm project: implement the 5 common trading patterns, and make a pseudo analyzis of what the usual outcome is.
+*** Set a goal for trading and divide into percent to trade pr option: highhand, week, month, 1k (+85% - +100%), 4k (+100% - 1000%). Base the percent gained on both increase in coin value and increase in amount hodl'd => bullish more percent of trades on +15% and more, bearish more percent of trades on -25% and more 
+- Longterm project: implement the 5 common trading patterns, and make a pseudo analyzis of what the usual outcome is. Also look at "breakout" patterns, they are probably easy to calculate
 - CME gaps? Are they vital to keep tabs on?
+- Improve the way price handles param: coin
+- Create a function that handles coins that are worth $1 > (eg. Dogecoin) accept prices at .toFixed(8)
+- Make a function that converts price in price(coin) to btc as reference value... (nm use vs_currencies=sats!)
 
 						##########
 						|  TODO  |
 						##########
 
+- Correct the fetch to find valid marketpairs to handle text return. Unexpected token < in JSON at position 0
 - Make a function that cancels all GIO bids around every new hour to maximize dividens
 - Keep track of the price of each coin (24h, 7days, 1mo, alltime) to "predict" future outcomes
 - Scrape news sites and message boards for good / bad news to get in or out before catastrophy occures 
@@ -40,16 +52,17 @@
 - Read up on Node.js process.exit(1) and consider writing a try-catch block
 - You should consider a 'version.json' file to keep track of which version user uses. (Too easy to hack?)
 - Make a util.js, tickers.js to keep track of utility function (curr. daily volume, strategies, etc) and tickers to focus on or avoid
-- Make a function that allows canceling a spesific of all trades for a spesific ticker-pair
+- Make a function that allows canceling a spesifics of all trades for a spesific ticker-pair
 - Add ANSI colors to output to clearly make errors stand out (see ansi.txt)
 - Make a trade history register (stored in a file) to be able to track order status and history
 - Make a balance() to retrieve your balance stored on graivex, show available and inOrders.
 - Make a MainLoop the uses setInterval(() => {}, MAX_AMOUNT_OF_CONNECTIONS)
-- Research if you can collect faucet using the API
+- Research if you can collect faucet using the API - NO, IT'S NOT POSSIBLE!
 - Implement an option to select current (realtime) price and place a buy / sell based on it in order()
 - Implement an option to generate an "all" coins dump strategy for unwanted coins. Should not generate loses, so handle it
 - Implement a scraper for /r/WallStreetBets to get on the hype early?
 - Implement some kind of strategy based on realtime data, bullish = HODL top 5, bearish = HODL stablecoins, sideways = +/-5%
+- Implement a try-catch clause in initialize() finally {} to detect errors and shut down getting markets goes wrong
 
     /* bid, sell, cancel, cancelAll, etc */
     order(
@@ -68,3 +81,54 @@
 
 EXAMPLE OF README.MD WITH METAINFO REGARDING STATUS: 
 - https://raw.githubusercontent.com/psf/black/master/README.md
+
+						##################
+						|  RELEASE PLAN  |
+						##################
+
+- publish a post on r/TestMyApp, r/javascript (on Showoff Saturday)
+- twitter
+- facebook
+
+
+						##################
+						|    CODE DUMP   |
+						##################
+
+    // depth("giobtc", 10, "desc");
+    // trades("giobtc");
+    //let tonce = bot.tonce();
+    //balance("btc", tonce);
+
+    // Testing "buy" order
+    // bot.execute_command(
+    //     order, 
+    //     [
+    //         "buy", 
+    //         "giobtc", 
+    //         0.00000070, 
+    //         100
+    //     ]
+    // );
+
+    // Testing "sell" order
+    // bot.execute_command(
+    //     order, 
+    //     [
+    //         "sell", 
+    //         "giobtc", 
+    //         0.00000125, 
+    //         100
+    //     ]
+    // );
+
+    // Testing an "invalid" order
+    // bot.execute_command(
+    //     order, 
+    //     [
+    //         "invest", 
+    //         "bchdoge", 
+    //         "current", 
+    //         "all"
+    //     ]
+    // );

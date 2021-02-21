@@ -20,10 +20,13 @@
     "nodemon": "^2.0.6"
   },
   "dependencies": {
+    "coingecko-api": "^1.0.10",
     "crypto": "^1.0.1",
     "express": "^4.17.1",
     "fs": "^0.0.1-security",
     "ini": "^1.3.7",
-    "node-fetch": "^2.6.1"
+    "moment": "^2.29.1",
+    "node-fetch": "^2.6.1",
+    "prompt": "^1.1.0"
   }
 }

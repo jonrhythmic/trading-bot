@@ -3,7 +3,8 @@ import ini from 'ini';
 import fs from 'fs';
 import crypto from 'crypto';
 import fetch from 'node-fetch';
-import { createBrotliDecompress } from 'zlib';
+import market from './core/market.js';
+import { brotliCompress } from 'zlib';
 //import * as coins from './data/coins.json';
 // import terminate from './core/utils.js';
 // Import the bot configurations
@@ -18,7 +19,12 @@ class Bot {
         this.acesss_key = config.ACCESS_KEY;
         this.secret_key = config.SECRET_KEY;
     }
-    initialize(obj) {
+
+    initialize = async (obj) => {
+        let markets = [];
+        let pairs = [];
+        let count = 0;
+
         try {
             // This is not the same as if (!bot instanceof Bot) {} because !bot will be evaluated before instanceof
             if (!(obj instanceof Bot)) { 
@@ -49,28 +55,55 @@ class Bot {
                 if (err) {
                     console.log(err);
                 } else {
+                    // Store all coins in a list
                     let coinlist = JSON.parse(coins);
-                    let list = [];
+
+                    // Iterate over each coin and generate a market ticker out of them
+                    pairs = coinlist.flatMap(first => coinlist.map(second => {
+                        if (!(first.id === second.id)) {
+                            //console.log(`${first.id}${second.id}`);
+                            return first.id.toLowerCase() + second.id.toLowerCase();
+                        }})).filter(i => i != null);
                     
-                    for (let coin of coinlist) {
-                        console.log(coin.name, coin.id);
-                    }
-
-                    for (let i of list) {
-                        list.fill(list);
-                    }
-                    console.log(list.length);
-
-                    // EITHER WRITE A FUNCTION THAT TEST fetch(&market="TICKER_1" + "TICKER_2") || fetch(&market=""TICKER_2" + "TICKER_1") === EXISTS?, 
-                    // or store the existing market in the coins.js list...
-                    //  GET THE REALTIME PRICE OF A COIN USING COINGECKO TO COMPARE YOUR BID PRICE WITH 
-                    // IMPLEMENT THE STRATEGY TO BE USED TO DETERMINE WHAT TO DO IN THE BOT (percent gain / lower + current trend: bearish / bullish / sideways / hodl)
+                    // Run through all trading pairs to detect valid markeds
+                    for (let elements in pairs) {
+                        setTimeout(() => {
+                            // Match all combinations of ticker pairs for real market pairs from the public API
+                            fetch('https://graviex.net//webapi/v3/markets/' + pairs[elements] + ".json/", {
+                                method: 'GET', 
+                                body: null,
+                                headers: {'Content-Type': 'application/json'}
+                            })
+                            // TODO: This sometimes returns as text and returns an error: Unexpected token < in JSON at position 0 { type: 'invalid-json }
+                            .then(res => 
+                            // {
+                            //     if (res.headers.get('Content-Type') === 'application/json') {
+                            //         return res.json();
+                            //     } 
+                            // })
+                                res.json()
+                            )
+                            .then(res => {
+                                if (!(res.error)) {
+                                    //process.stdout.write("Valid market pair found: ", res.attributes.id);
+                                    //console.log("Added:", res.attributes.id);
+                                    markets.push("/" + res.attributes.id);
+                                    count++;
+                                    // TODO: There needs to be a newline added after function finished executing
+                                    //process.stdout.write(`Total valid markets: ${count}\r`);
+                                    console.log(`Total valid markets: ${count}\r`);
+                                } 
+                                //process.stdout.write(`Total valid markets: ${count}`);
+                            })
+                            .catch(err => console.log(err));
+                        }, 1000);
+                    }                    
                 }
-            });
-            
-            return console.log("version <0. 0. 0>", "\x1b[35m", "alpha", "\x1b[0m"); 
+            });                        
             // TODO: Add a versoning system?
-        }
+    
+            return console.log("version <0. 0. 0>", "\x1b[35m", "alpha", "\x1b[0m"); 
+        }        
     }
     tonce() { return new Date().getTime(); }
     signature(method, uri, pair, side, price, amount) {
@@ -101,7 +134,7 @@ class Bot {
             fetch(url + uri + "?" + request + "&signature=" + signature, {
                 method: method,
                 body: null,
-                header: {'Content-Type': 'application/json'}
+                headers: {'Content-Type': 'application/json'}
             })
             .then(res => res.json())
             .then(res => console.log(res))
@@ -116,18 +149,99 @@ class Bot {
         try {
             // Iterate the main loop in timed to avoid flooding the API
             setInterval(() => {
-                console.log(`Iterated once!`);
+                let type = 'runningWild';
+                switch(type) {
+                    // trading pairs vs stablecoins like USDT
+                    case 'stable':
+                        break;
+                    // trading pairs vs crypto with max cap like BTC
+                    case 'volatile':
+                        break;
+                    // trading pairs vs crypto with endless cap like DOGE
+                    case 'semivolatile':
+                        break;
+                    // emit the results from current iteration
+                    case 'runningWild':
+                        process.stdout.write("Another iteration...\r");
+                        break;
+                    default:
+                        console.log(`Current iteration yealded x new buy / sells, [...]`);
+                }
             }, 1000);
         }
         finally {
             // Users closing the application
-            process.on('SIGTERM', () => { console.log("Exiting 1!") });  
+            process.on('SIGTERM', () => { console.log("Application closing...") });  
             // User pressing Ctrl + C
-            process.on('SIGINT', () => { console.log("Exiting 2!") }); 
+            process.on('SIGINT', () => { console.log("Process aborting...") }); 
             // OS spesific exit 
-            process.on('SIGQUIT', () => { console.log("Exiting 3!") });
+            process.on('SIGQUIT', () => { console.log("Exiting") });
         }
     };
+    price = async (coin, fiat='') => {
+        if (fiat === '') {
+            fiat = "usd";
+        } 
+        
+        // Connect to Coingecko API and fetch live price
+        fetch('https://api.coingecko.com/api/v3/simple/price' + `?ids=${coin}&vs_currencies=${fiat}`, {
+            method: 'GET'
+        })
+        .then(res => res.json())
+        .then(res => {
+            console.log("1", coin, "=", res[coin][fiat] + ` ${fiat}`);
+            
+            let price = res[coin][fiat];
+            let result = this.convert(price, coin, fiat);
+
+            // let five = 0.95;
+            // let ten = 0.9;
+            // let twentyfive = 0.75;
+            // let fifty = 0.5;
+            // console.log("5% lower", (price * five).toFixed(8));
+            // console.log("10% lower", (price * ten).toFixed(8));
+            // console.log("25% lower", (price * twentyfive).toFixed(8));
+            // console.log("50% lower", (price * fifty).toFixed(8));
+        })
+        .catch(err => console.log(err));
+
+        return; 
+    }
+    exchangeInfo = async () => {
+        fetch('https://api.coingecko.com/api/v3/exchanges/graviex', {
+            method: 'GET'
+        })
+        .then(res => res.json())
+        .then(res => {
+            console.log(res);
+        })
+        .catch(err => console.log(err));
+    }
+    convert(price, from, into) {
+        let res;
+
+        // If price is set in a stablecoin avoid converting
+        if (into === 'usd' || into === 'usdt' || into === 'eur') {
+            res = price;
+        } 
+        // If coin to convert from isn't in btc
+        else if (from !== 'sats' || from !== 'btc' || from !== 'bitcoin') {
+            // Converting to btc
+            if (into === 'sats' || into === 'btc' || into === 'bitcoin') {
+                // Add leading zeros to the result
+                res = this.pad(price);
+            } 
+            // Avoid converting altcoin pairs 
+            else if (into !== 'sats' || into !== 'btc' || into !== 'bitcoin') {
+                res = price;
+            }
+        }
+        return res;
+    }
+    pad(num) {
+        // Remove decimal values behind the comma and return conversion
+        return String(num.toFixed(0)).padStart(10, '0.0000000');
+    }
 };
 
 // IIFE bot starting point
@@ -136,47 +250,16 @@ class Bot {
     const bot = new Bot(config.ACCESS_KEY, config.SECRET_KEY);
     // Determine if bot is configured correctly
     bot.initialize(bot);
-
-    // depth("giobtc", 10, "desc");
-    // trades("giobtc");
-    //let tonce = bot.tonce();
-    //balance("btc", tonce);
-
-    // Testing "buy" order
-    // bot.execute_command(
-    //     order, 
-    //     [
-    //         "buy", 
-    //         "giobtc", 
-    //         0.00000070, 
-    //         100
-    //     ]
-    // );
-
-    // Testing "sell" order
-    // bot.execute_command(
-    //     order, 
-    //     [
-    //         "sell", 
-    //         "giobtc", 
-    //         0.00000125, 
-    //         100
-    //     ]
-    // );
-
-    // Testing an "invalid" order
-    // bot.execute_command(
-    //     order, 
-    //     [
-    //         "invest", 
-    //         "bchdoge", 
-    //         "current", 
-    //         "all"
-    //     ]
-    // );
+    
+    bot.price('dogecoin', 'sats');
+    bot.price('litecoin', 'usd');
+    bot.price('bitcoin-cash', 'ltc');
     
     do {
+        //market.changes('BTC');
+        //market.volume('NOK');
         bot.run();
+        
     } while (0);
     
 })();
@@ -238,7 +321,7 @@ function selection(ticker1, ticker2) {
     fetch('https://graviex.net/webapi/v3/markets' + "/" + `${ticker1}${ticker2}`, {
         method: 'GET', 
         body: null,
-        header: {'Content-Type': 'application/json'}
+        headers: {'Content-Type': 'application/json'}
     })
     .then(res => res.json())
     .then(res => console.log(res.attributes.base_unit, res.attributes.quote_unit))
@@ -261,7 +344,7 @@ function trades(pair) {
     fetch(url + `?market=${pair}`, {
         meothod: 'GET',
         body: null, 
-        heaeders: {'Content-Type': 'application/json'}
+        headers: {'Content-Type': 'application/json'}
     })
     .then(res => res.json())
     .then(res => console.log(res))
@@ -278,7 +361,7 @@ function depth(pair, limit='', order='') {
     fetch(url + request, {
         method: 'GET', 
         body: null,
-        header: {'Content-Type': 'application/json'}
+        headers: {'Content-Type': 'application/json'}
     }) 
     .then(res => res.json())
     .then(res => console.log(res))
@@ -316,4 +399,9 @@ function balance(ticker, tonce) {
 // Error logging
 function log(error) {
     fs.writeFile("./error.txt", Date.now + ": " + error, function (params) {} + "\r\n");
+}
+
+function onError(err) {
+    console.log(err);
+    return -1;
 }
