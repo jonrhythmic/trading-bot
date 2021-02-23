@@ -4,8 +4,10 @@
 
 - Track "recent trades" to make sure to be able to send new money into the queue.
 - Find out if you add bchdoge and ensure that the price is correct!
-- IMPLEMENT THE STRATEGY TO BE USED TO DETERMINE WHAT TO DO IN THE BOT (percent gain / lower + current trend: bearish / bullish / sideways / hodl)
-- Make sure you test the correct base_unit / quote_unit before finding the price! Otherwise you're f***ed
+- IMPLEMENT THE STRATEGY (ON A TRENDLINE) TO BE USED TO DETERMINE WHAT TO DO IN THE BOT (percent gain / lower + current trend: bearish / bullish / sideways / hodl)
+- Make sure you test the correct base_unit / quote_unit before finding the price! 
+- Handle the process of collecting realtime prices using coingecko by implementing a json-file that stores valid tickers
+- Complete the order() if (price === "current") to handle the basic strategic bid / sell value
 
 					      ##############
 					      |  MAINLOOP  |
@@ -31,13 +33,14 @@
 - Longterm project: implement the 5 common trading patterns, and make a pseudo analyzis of what the usual outcome is. Also look at "breakout" patterns, they are probably easy to calculate
 - CME gaps? Are they vital to keep tabs on?
 - Improve the way price handles param: coin
-- Create a function that handles coins that are worth $1 > (eg. Dogecoin) accept prices at .toFixed(8)
-- Make a function that converts price in price(coin) to btc as reference value... (nm use vs_currencies=sats!)
 
 						##########
 						|  TODO  |
 						##########
 
+- Make sure the function names are better planned out!
+- Move the "detect trading pairs" from initialize() into selection.
+- Create function that divides the number of pairs[] normalized by / 100, and make a progressbar instead of printing: Total valid markets: cx
 - Correct the fetch to find valid marketpairs to handle text return. Unexpected token < in JSON at position 0
 - Make a function that cancels all GIO bids around every new hour to maximize dividens
 - Keep track of the price of each coin (24h, 7days, 1mo, alltime) to "predict" future outcomes
@@ -63,6 +66,7 @@
 - Implement a scraper for /r/WallStreetBets to get on the hype early?
 - Implement some kind of strategy based on realtime data, bullish = HODL top 5, bearish = HODL stablecoins, sideways = +/-5%
 - Implement a try-catch clause in initialize() finally {} to detect errors and shut down getting markets goes wrong
+- Improve the history() to include &to= and &from=
 
     /* bid, sell, cancel, cancelAll, etc */
     order(
