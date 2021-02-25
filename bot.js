@@ -16,7 +16,6 @@ class Bot {
         this.acesss_key = config.ACCESS_KEY;
         this.secret_key = config.SECRET_KEY;
     }
-
     initialize = async (obj) => {
         let markets = [];
         let pairs = [];
@@ -24,22 +23,22 @@ class Bot {
 
         try {
             // This is not the same as if (!bot instanceof Bot) {} because !bot will be evaluated before instanceof
-            if (!(obj instanceof Bot)) { 
-                console.error("\x1b[36m", "Bot failed to launch...", "\x1b[0m"); 
-            } 
+            if (!(obj instanceof Bot)) {
+                console.error("\x1b[36m", "Bot failed to launch...", "\x1b[0m");
+            }
             // Check if bot is configured with access tokens
-            else if (config.ACCESS_KEY === '') { 
-                console.error("Config.ini:", "\x1b[1m", "Missing or erroneous ACCESS_KEY!", "\x1b[0m"); 
-            } 
-            else if (config.SECRET_KEY === '') { 
-                console.error("Config.ini:", "\x1b[1m", "Missing or erroneous SECRET_KEY!", "\x1b[0m"); 
-            } 
+            else if (config.ACCESS_KEY === '') {
+                console.error("Config.ini:", "\x1b[1m", "Missing or erroneous ACCESS_KEY!", "\x1b[0m");
+            }
+            else if (config.SECRET_KEY === '') {
+                console.error("Config.ini:", "\x1b[1m", "Missing or erroneous SECRET_KEY!", "\x1b[0m");
+            }
             else {
                 console.log("Status:", "\x1b[36m", "Graviex trading-bot launched successfully!", "\x1b[0m");
             }
         } catch (error) {
-                // Re-throw the error unchanged
-                throw error; 
+            // Re-throw the error unchanged
+            throw error;
         } finally {
             // Runs no matter what the result comes back as
             // console.log(obj); 
@@ -47,48 +46,60 @@ class Bot {
             // console.log(obj instanceof Bot);            // true
             // console.log(obj instanceof constructor);    // true
             // If a finally returns a value it becomes the return value of the entire try-catch-finally block regardless of any return from try-catch
-            
             fs.readFile('./data/coins.json', (err, coins) => {
                 if (err) {
                     console.log(err);
                 } else {
                     // Store all coins in a list
                     let coinlist = JSON.parse(coins);
-
+        
                     // Iterate over each coin and create a potential market pair
                     pairs = coinlist.flatMap(first => coinlist.map(second => {
                         if (!(first.id === second.id)) {
                             //console.log(`${first.id}${second.id}`);
                             return first.id.toLowerCase() + second.id.toLowerCase();
-                        }})).filter(i => i != null);
-                    
+                        }
+                    })).filter(i => i != null);
+        
                     // Run through all trading pairs to detect valid markets
                     for (let elements in pairs) {
                         setTimeout(() => {
                             // Match all combinations of ticker pairs for real market pairs from the public API
                             fetch('https://graviex.net//webapi/v3/markets/' + pairs[elements] + ".json/", {
-                                method: 'GET', 
+                                method: 'GET',
                                 body: null,
-                                headers: {'Content-Type': 'application/json'}
+                                headers: { 'Content-Type': 'application/json' }
                             })
                             // TODO: This sometimes returns as text and returns an error: Unexpected token < in JSON at position 0 { type: 'invalid-json }
                             .then(res => 
-                            // {
                             //     if (res.headers.get('Content-Type') === 'application/json') {
-                            //         return res.json();
-                            //     } 
+                            //         return await res.json();
+                            //     }
                             //     console.log(res.headers);
                             // }
-                                res.json()
+                                 res.json()
                             )
                             .then(res => {
                                 if (!(res.error)) {
                                     markets.push("/" + res.attributes.id, res.attributes.base_unit, res.attributes.quote_unit);
                                     
+                                    let input = {
+                                        'id': res.attributes.id,
+                                        'base': res.attributes.base_unit,
+                                        'quote': res.attributes.quote_unit 
+                                    };
+                                    
+                                    let data = JSON.stringify([input], null, 4);
+                                                                        
+                                    // TODO: This needs to add a [] at the beginning and the end + remove the last comma to be correct!
+                                    fs.writeFile('./data/markets.json', (data + ',\n') , { flag: 'a' }, (err) => {
+                                        if (err) { throw err; }
+                                    });
+
                                     count++;
                                     //process.stdout.write(`Total valid markets: ${count}\r`);
                                     console.log(`Total valid markets: ${count}\r`);
-                                } 
+                                }
                                 //process.stdout.write(`Total valid markets: ${count}`);
                             })
                             .catch(err => console.log(err));
@@ -98,7 +109,6 @@ class Bot {
             });
             return process.stdout.write("\x1b[37;1mversion\x1b[0m <0. 0. 0> \x1b[35malpha\x1b[0m\r\n");
         }
-        
     }
     tonce() { return new Date().getTime(); }
     signature(method, uri, pair, side, price, amount) {
@@ -108,7 +118,6 @@ class Bot {
         const message = `${method}|/webapi/v3/${uri}|` + request;
         const signature = crypto.createHmac('sha256', config.SECRET_KEY).update(message).digest('hex');
         
-        console.log(message);
         return { signature, request };
     }
     execute_command(callback, args) { 
@@ -177,6 +186,7 @@ class Bot {
     }
     convert(price, from, into) {
         let result;
+        
         // If price is set in a stablecoin avoid converting
         if (into === 'usd' || into === 'usdt' || into === 'eur') { result = price; } 
         // If coin to convert from isn't in btc
@@ -195,7 +205,7 @@ class Bot {
         // Remove decimal values behind the comma and return conversion
         return String(num.toFixed(0)).padStart(10, '0.0000000');
     }
-    history(coin='', limit='') { 
+    history = async (coin='', limit='') => { 
         let uri = 'trades/history';
         let tonce = this.tonce();
         let market = coin; 
@@ -269,6 +279,10 @@ class Bot {
     } while (0);
     
 })();
+
+const findMarkets = async () => {
+
+} 
 
 // Add generic middleware to express
 app.use((req, res, next) => {
@@ -408,6 +422,6 @@ function log(error) {
 }
 
 function onError(err) {
-    console.log(err);
-    return -1;
+    process.stderr.write(err);
+    process.exit(-1);
 }

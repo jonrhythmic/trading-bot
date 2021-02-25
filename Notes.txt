@@ -8,6 +8,8 @@
 - Make sure you test the correct base_unit / quote_unit before finding the price! 
 - Handle the process of collecting realtime prices using coingecko by implementing a json-file that stores valid tickers
 - Complete the order() if (price === "current") to handle the basic strategic bid / sell value
+- Improve all fetch() using asyns / await. 
+- Improve the fecth'es so it can be customized easily (refactor the code, dude!)
 
 					      ##############
 					      |  MAINLOOP  |
@@ -136,3 +138,16 @@ EXAMPLE OF README.MD WITH METAINFO REGARDING STATUS:
     //         "all"
     //     ]
     // );
+
+    // const getAPI = async () =>{
+    //    let res = await fetch('https://graviex.net//webapi/v3/markets/' + pairs[elements] + '.json/');
+    //    let resBody = await res.json();
+    //    if (res.headers.get('content-type') === 'application/json'){
+    //        console.log('headers ok!');
+    //        console.log('body: ', resBody);
+    //    }else {
+    //        console.log('headers wrong!');
+    //        console.log('head: ', resHead);
+    //    } 
+    // }
+    // getAPI();
