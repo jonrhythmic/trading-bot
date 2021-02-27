@@ -50,13 +50,14 @@ class Bot {
             // console.log(obj instanceof Bot);            // true
             // console.log(obj instanceof constructor);    // true
             // If a finally returns a value it becomes the return value of the entire try-catch-finally block regardless of any return from try-catch
+
             fs.readFile('./data/coins.json', (err, coins) => {
                 if (err) {
                     console.log(err);
                 } else {
                     // Parse all coins from './data/coins.json' in a list
                     let coinlist = JSON.parse(coins);
-                    
+
                     // Iterate over each coin and create a potential market pair
                     // getMarketPairs(list) {}
                     this.pairs = coinlist.flatMap(first => coinlist.map(second => {
@@ -105,7 +106,12 @@ class Bot {
                                     let data = JSON.stringify(this.markets, null, 4);
                                     
                                     //console.log(inputArr);
-
+                                    
+                                    // TODO: Needs to add the comma after each input, before a new data is inserted, store all inputs in the same array and pop the final comma!
+                                    fs.writeFile('./data/markets.json', String(data), { flag: 'a' }, (err) => {
+                                        if (err) { throw err; }
+                                    });
+                                    
                                     // TypeError [ERR_INVALID_ARG_TYPE]: The "data" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received an instance of Array
                                     //     at Object.writeFile (fs.js:1436:5)
                                     //     at file:///C:/Grenness/trading-bot/bot.js:124:24
@@ -113,11 +119,6 @@ class Bot {
                                     // code: 'ERR_INVALID_ARG_TYPE'
                                     // }
                                     
-                                    // TODO: Needs to add the comma after each input, before a new data is inserted, store all inputs in the same array and pop the final comma!
-                                    fs.writeFile('./data/markets.json', data, { flag: 'a' }, (err) => {
-                                        if (err) { throw err; }
-                                    });
-
                                     // const dataArr = []; //før loopen
                                     // // Denne kjøres for hver gang input endrer seg.
                                     // dataArr = push({...input}); //i slutten av loopen
