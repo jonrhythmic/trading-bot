@@ -10,6 +10,7 @@
 - Complete the order() if (price === "current") to handle the basic strategic bid / sell value
 - Improve all fetch() using asyns / await. 
 - Improve the fecth'es so it can be customized easily (refactor the code, dude!)
+- Create a function that does a lookup of coins.json' id vs coingeckos coins/list/"symbol" to make a list of tickers to use for price info.
 
 					      ##############
 					      |  MAINLOOP  |
@@ -69,6 +70,7 @@
 - Implement some kind of strategy based on realtime data, bullish = HODL top 5, bearish = HODL stablecoins, sideways = +/-5%
 - Implement a try-catch clause in initialize() finally {} to detect errors and shut down getting markets goes wrong
 - Improve the history() to include &to= and &from=
+- Class is labelled by a special internal property: [[FunctionKind]]:"classConstructor" (test for this to see if bot === ok)
 
     /* bid, sell, cancel, cancelAll, etc */
     order(
@@ -85,8 +87,12 @@
     /* startup, runtime, shutdown */
     status(res) { if (res.ok) /* res.status >= 200 && res.status < 300 */ {return res;} else {throw MyCustomError(res.message, res.code)} }
 
-EXAMPLE OF README.MD WITH METAINFO REGARDING STATUS: 
+EXAMPLES OF README.MD WITH METAINFO REGARDING STATUS: 
 - https://raw.githubusercontent.com/psf/black/master/README.md
+- https://raw.githubusercontent.com/dbohdan/classless-css/master/README.md
+
+NICE VISUAL STUDIO THEME: 
+- https://marketplace.visualstudio.com/items?itemName=Larxx.github-blue
 
 						##################
 						|  RELEASE PLAN  |

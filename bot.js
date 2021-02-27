@@ -12,29 +12,33 @@ const PORT = process.env.PORT;
 const app = express();
 
 class Bot {
+    // class properties;
+    markets = [];
+    pairs = [];
+    count = 0;
+
     constructor(acesss_key, secret_key) {
         this.acesss_key = config.ACCESS_KEY;
         this.secret_key = config.SECRET_KEY;
     }
     initialize = async (obj) => {
-        let markets = [];
-        let pairs = [];
-        let count = 0;
-
         try {
             // This is not the same as if (!bot instanceof Bot) {} because !bot will be evaluated before instanceof
             if (!(obj instanceof Bot)) {
-                console.error("\x1b[36m", "Bot failed to launch...", "\x1b[0m");
+                process.stdout.write(`\x1b[36mBot failed to launch...\x1b[0m\n`);
+                process.exit(-1);
             }
             // Check if bot is configured with access tokens
             else if (config.ACCESS_KEY === '') {
-                console.error("Config.ini:", "\x1b[1m", "Missing or erroneous ACCESS_KEY!", "\x1b[0m");
+                process.stdout.write(`\x1b[1mConfig.ini:\x1b[0m Missing or erroneous \x1b[1mACCESS_KEY\x1b[0m!\n`);
+                process.exit(-1);
             }
             else if (config.SECRET_KEY === '') {
-                console.error("Config.ini:", "\x1b[1m", "Missing or erroneous SECRET_KEY!", "\x1b[0m");
+                process.stdout.write(`\x1b[1mConfig.ini:\x1b[0m Missing or erroneous \x1b[1mSECRET_KEY\x1b[0m!\n`);
+                process.exit(-1);
             }
             else {
-                console.log("Status:", "\x1b[36m", "Graviex trading-bot launched successfully!", "\x1b[0m");
+                process.stdout.write(`Status: \x1b[36mGraviex trading-bot launched successfully!\x1b[0m\n`);
             }
         } catch (error) {
             // Re-throw the error unchanged
@@ -50,22 +54,23 @@ class Bot {
                 if (err) {
                     console.log(err);
                 } else {
-                    // Store all coins in a list
+                    // Parse all coins from './data/coins.json' in a list
                     let coinlist = JSON.parse(coins);
-        
+                    
                     // Iterate over each coin and create a potential market pair
-                    pairs = coinlist.flatMap(first => coinlist.map(second => {
+                    // getMarketPairs(list) {}
+                    this.pairs = coinlist.flatMap(first => coinlist.map(second => {
                         if (!(first.id === second.id)) {
                             //console.log(`${first.id}${second.id}`);
                             return first.id.toLowerCase() + second.id.toLowerCase();
                         }
                     })).filter(i => i != null);
-        
+                    
                     // Run through all trading pairs to detect valid markets
-                    for (let elements in pairs) {
+                    for (let elements in this.pairs) {
                         setTimeout(() => {
                             // Match all combinations of ticker pairs for real market pairs from the public API
-                            fetch('https://graviex.net//webapi/v3/markets/' + pairs[elements] + ".json/", {
+                            fetch('https://graviex.net//webapi/v3/markets/' + this.pairs[elements] + ".json/", {
                                 method: 'GET',
                                 body: null,
                                 headers: { 'Content-Type': 'application/json' }
@@ -81,7 +86,7 @@ class Bot {
                             )
                             .then(res => {
                                 if (!(res.error)) {
-                                    markets.push("/" + res.attributes.id, res.attributes.base_unit, res.attributes.quote_unit);
+                                    //this.markets.push("/" + res.attributes.id, res.attributes.base_unit, res.attributes.quote_unit);
                                     
                                     let input = {
                                         'id': res.attributes.id,
@@ -89,16 +94,37 @@ class Bot {
                                         'quote': res.attributes.quote_unit 
                                     };
                                     
-                                    let data = JSON.stringify([input], null, 4);
-                                                                        
-                                    // TODO: This needs to add a [] at the beginning and the end + remove the last comma to be correct!
-                                    fs.writeFile('./data/markets.json', (data + ',\n') , { flag: 'a' }, (err) => {
+                                    // This finally works, but pushing data to the writeFile loops through it countless times and adds the 
+                                    // current amount of pairs and restarts, adding another iteration with the next one. 
+                                    // SOLUTION: place the fs.writeFile outside this function and save it there
+                                    this.markets.push(input);
+
+                                    let inputArr = [input].flat();
+                                    // let data = JSON.stringify([input], null, 4);
+
+                                    let data = JSON.stringify(this.markets, null, 4);
+                                    
+                                    //console.log(inputArr);
+
+                                    // TypeError [ERR_INVALID_ARG_TYPE]: The "data" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received an instance of Array
+                                    //     at Object.writeFile (fs.js:1436:5)
+                                    //     at file:///C:/Grenness/trading-bot/bot.js:124:24
+                                    //     at FSReqCallback.readFileAfterClose [as oncomplete] (internal/fs/read_file_context.js:63:3) {
+                                    // code: 'ERR_INVALID_ARG_TYPE'
+                                    // }
+                                    
+                                    // TODO: Needs to add the comma after each input, before a new data is inserted, store all inputs in the same array and pop the final comma!
+                                    fs.writeFile('./data/markets.json', data, { flag: 'a' }, (err) => {
                                         if (err) { throw err; }
                                     });
 
-                                    count++;
+                                    // const dataArr = []; //før loopen
+                                    // // Denne kjøres for hver gang input endrer seg.
+                                    // dataArr = push({...input}); //i slutten av loopen
+                                    
+                                    this.count++;
                                     //process.stdout.write(`Total valid markets: ${count}\r`);
-                                    console.log(`Total valid markets: ${count}\r`);
+                                    console.log(`Total valid markets: ${this.count}\r`);
                                 }
                                 //process.stdout.write(`Total valid markets: ${count}`);
                             })
@@ -175,6 +201,10 @@ class Bot {
             // console.log("50% lower", (price * fifty).toFixed(8));
         })
         .catch(err => console.log(err));
+    }
+    progressbar(denominator) {
+        // let normalized = (100 / denominator).toFixed(2);
+        // return normalized;
     }
     exchangeInfo = async () => {
         fetch('https://api.coingecko.com/api/v3/exchanges/graviex', {
