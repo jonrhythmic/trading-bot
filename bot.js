@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { request, response } from 'express';
 import ini from 'ini';
 import fs from 'fs';
 import crypto from 'crypto';
@@ -50,90 +50,6 @@ class Bot {
             // console.log(obj instanceof Bot);            // true
             // console.log(obj instanceof constructor);    // true
             // If a finally returns a value it becomes the return value of the entire try-catch-finally block regardless of any return from try-catch
-
-            fs.readFile('./data/coins.json', (err, coins) => {
-                if (err) {
-                    console.log(err);
-                } else {
-                    // Parse all coins from './data/coins.json' in a list
-                    let coinlist = JSON.parse(coins);
-
-                    // Iterate over each coin and create a potential market pair
-                    // getMarketPairs(list) {}
-                    this.pairs = coinlist.flatMap(first => coinlist.map(second => {
-                        if (!(first.id === second.id)) {
-                            //console.log(`${first.id}${second.id}`);
-                            return first.id.toLowerCase() + second.id.toLowerCase();
-                        }
-                    })).filter(i => i != null);
-                    
-                    // Run through all trading pairs to detect valid markets
-                    for (let elements in this.pairs) {
-                        setTimeout(() => {
-                            // Match all combinations of ticker pairs for real market pairs from the public API
-                            fetch('https://graviex.net//webapi/v3/markets/' + this.pairs[elements] + ".json/", {
-                                method: 'GET',
-                                body: null,
-                                headers: { 'Content-Type': 'application/json' }
-                            })
-                            // TODO: This sometimes returns as text and returns an error: Unexpected token < in JSON at position 0 { type: 'invalid-json }
-                            .then(res => 
-                            //     if (res.headers.get('Content-Type') === 'application/json') {
-                            //         return await res.json();
-                            //     }
-                            //     console.log(res.headers);
-                            // }
-                                 res.json()
-                            )
-                            .then(res => {
-                                if (!(res.error)) {
-                                    //this.markets.push("/" + res.attributes.id, res.attributes.base_unit, res.attributes.quote_unit);
-                                    
-                                    let input = {
-                                        'id': res.attributes.id,
-                                        'base': res.attributes.base_unit,
-                                        'quote': res.attributes.quote_unit 
-                                    };
-                                    
-                                    // This finally works, but pushing data to the writeFile loops through it countless times and adds the 
-                                    // current amount of pairs and restarts, adding another iteration with the next one. 
-                                    // SOLUTION: place the fs.writeFile outside this function and save it there
-                                    this.markets.push(input);
-
-                                    let inputArr = [input].flat();
-                                    // let data = JSON.stringify([input], null, 4);
-
-                                    let data = JSON.stringify(this.markets, null, 4);
-                                    
-                                    //console.log(inputArr);
-                                    
-                                    // TODO: Needs to add the comma after each input, before a new data is inserted, store all inputs in the same array and pop the final comma!
-                                    fs.writeFile('./data/markets.json', String(data), { flag: 'a' }, (err) => {
-                                        if (err) { throw err; }
-                                    });
-                                    
-                                    // TypeError [ERR_INVALID_ARG_TYPE]: The "data" argument must be of type string or an instance of Buffer, TypedArray, or DataView. Received an instance of Array
-                                    //     at Object.writeFile (fs.js:1436:5)
-                                    //     at file:///C:/Grenness/trading-bot/bot.js:124:24
-                                    //     at FSReqCallback.readFileAfterClose [as oncomplete] (internal/fs/read_file_context.js:63:3) {
-                                    // code: 'ERR_INVALID_ARG_TYPE'
-                                    // }
-                                    
-                                    // const dataArr = []; //før loopen
-                                    // // Denne kjøres for hver gang input endrer seg.
-                                    // dataArr = push({...input}); //i slutten av loopen
-                                    
-                                    this.count++;
-                                    //process.stdout.write(`Total valid markets: ${count}\r`);
-                                    console.log(`Total valid markets: ${this.count}\r`);
-                                }
-                                //process.stdout.write(`Total valid markets: ${count}`);
-                            })
-                            .catch(err => console.log(err));
-                        }, 1000);
-                    }
-                }
-            });
             return process.stdout.write("\x1b[37;1mversion\x1b[0m <0. 0. 0> \x1b[35malpha\x1b[0m\r\n");
         }
     }
@@ -203,10 +119,6 @@ class Bot {
         })
         .catch(err => console.log(err));
     }
-    progressbar(denominator) {
-        // let normalized = (100 / denominator).toFixed(2);
-        // return normalized;
-    }
     exchangeInfo = async () => {
         fetch('https://api.coingecko.com/api/v3/exchanges/graviex', {
             method: 'GET'
@@ -260,6 +172,57 @@ class Bot {
         .then(res => console.log(res))
         .catch(err => console.log(err));
     }
+    findMarkets = async () => {
+        let data = [];
+        
+        fs.readFile('./data/coins.json', (err, coins) => {
+            if (err) {
+                console.log(err);
+            } else {
+                // Parse all coins from './data/coins.json' in a list
+                let coinlist = JSON.parse(coins);
+
+                // Iterate over each coin and create a potential market pair
+                this.pairs = coinlist.flatMap(first => coinlist.map(second => {
+                    if (!(first.id === second.id)) {
+                        //console.log(`${first.id}${second.id}`);
+                        return first.id.toLowerCase() + second.id.toLowerCase();
+                    }
+                })).filter(i => i != null);
+
+                // Run through all trading pairs to detect valid markets
+                this.pairs.forEach (async (pair) => {
+                    const request = await fetch('https://graviex.net//webapi/v3/markets/' + pair + ".json/", {
+                        method: 'GET',
+                        body: null,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (request.ok) {
+                        const response = await request.json();
+
+                        try {
+                            let input = {
+                                'id': response.attributes.id,
+                                'base': response.attributes.base_unit,
+                                'quote': response.attributes.quote_unit 
+                            };
+                            this.markets.push(input);
+                            data = JSON.stringify(this.markets, null, 4);
+                            
+                            fs.writeFileSync('./data/markets.json', String(data), /* { flag: 'a' }, */ (err) => {
+                                if (err) { throw err; }
+                            });
+
+                        }
+                        catch (error) {
+                            console.log(error);
+                        }
+                    } 
+                });
+            } 
+        });
+    }
     // Bots mainloop 
     run = async () => {
         try {
@@ -299,21 +262,19 @@ class Bot {
     const bot = new Bot(config.ACCESS_KEY, config.SECRET_KEY);
     // Determine if bot is configured correctly
     bot.initialize(bot);
+    // Generate a list of existing markets
+    bot.findMarkets();
 
     bot.price('dogecoin', 'sats');
     bot.price('litecoin', 'usd');
     bot.price('bitcoin-cash', 'ltc');
-
+            
     do {
         bot.run();
 
     } while (0);
     
 })();
-
-const findMarkets = async () => {
-
-} 
 
 // Add generic middleware to express
 app.use((req, res, next) => {

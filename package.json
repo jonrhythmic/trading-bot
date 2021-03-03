@@ -5,7 +5,7 @@
   "description": "Trading bot for https://graviex.net/",
   "main": "bot.js",
   "scripts": {
-    "start": "nodemon bot.js"
+    "start": "nodemon --ignore './data/*' bot.js"
   },
   "keywords": [
     "automation",
