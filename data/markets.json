@@ -1,0 +1,252 @@
+[
+    {
+        "id": "ethltc",
+        "base": "eth",
+        "quote": "ltc"
+    },
+    {
+        "id": "etheur",
+        "base": "eth",
+        "quote": "eur"
+    },
+    {
+        "id": "ethdash",
+        "base": "eth",
+        "quote": "dash"
+    },
+    {
+        "id": "ethusdt",
+        "base": "eth",
+        "quote": "usdt"
+    },
+    {
+        "id": "ethbtc",
+        "base": "eth",
+        "quote": "btc"
+    },
+    {
+        "id": "btceth",
+        "base": "btc",
+        "quote": "eth"
+    },
+    {
+        "id": "ethusd",
+        "base": "eth",
+        "quote": "usd"
+    },
+    {
+        "id": "btcltc",
+        "base": "btc",
+        "quote": "ltc"
+    },
+    {
+        "id": "btcusdt",
+        "base": "btc",
+        "quote": "usdt"
+    },
+    {
+        "id": "btcusd",
+        "base": "btc",
+        "quote": "usd"
+    },
+    {
+        "id": "bchbtc",
+        "base": "bch",
+        "quote": "btc"
+    },
+    {
+        "id": "btceur",
+        "base": "btc",
+        "quote": "eur"
+    },
+    {
+        "id": "ltcbtc",
+        "base": "ltc",
+        "quote": "btc"
+    },
+    {
+        "id": "bchusdt",
+        "base": "bch",
+        "quote": "usdt"
+    },
+    {
+        "id": "ltcusd",
+        "base": "ltc",
+        "quote": "usd"
+    },
+    {
+        "id": "ltcdash",
+        "base": "ltc",
+        "quote": "dash"
+    },
+    {
+        "id": "ltcusdt",
+        "base": "ltc",
+        "quote": "usdt"
+    },
+    {
+        "id": "dogebtc",
+        "base": "doge",
+        "quote": "btc"
+    },
+    {
+        "id": "dogeltc",
+        "base": "doge",
+        "quote": "ltc"
+    },
+    {
+        "id": "zecusdt",
+        "base": "zec",
+        "quote": "usdt"
+    },
+    {
+        "id": "zecbtc",
+        "base": "zec",
+        "quote": "btc"
+    },
+    {
+        "id": "dogeusdt",
+        "base": "doge",
+        "quote": "usdt"
+    },
+    {
+        "id": "dashbtc",
+        "base": "dash",
+        "quote": "btc"
+    },
+    {
+        "id": "dogeusd",
+        "base": "doge",
+        "quote": "usd"
+    },
+    {
+        "id": "dashusdt",
+        "base": "dash",
+        "quote": "usdt"
+    },
+    {
+        "id": "ltceur",
+        "base": "ltc",
+        "quote": "eur"
+    },
+    {
+        "id": "dogeeur",
+        "base": "doge",
+        "quote": "eur"
+    },
+    {
+        "id": "dogeeth",
+        "base": "doge",
+        "quote": "eth"
+    },
+    {
+        "id": "usdteur",
+        "base": "usdt",
+        "quote": "eur"
+    },
+    {
+        "id": "kmdbtc",
+        "base": "kmd",
+        "quote": "btc"
+    },
+    {
+        "id": "usdtusd",
+        "base": "usdt",
+        "quote": "usd"
+    },
+    {
+        "id": "dogedash",
+        "base": "doge",
+        "quote": "dash"
+    },
+    {
+        "id": "gioeth",
+        "base": "gio",
+        "quote": "eth"
+    },
+    {
+        "id": "gioeur",
+        "base": "gio",
+        "quote": "eur"
+    },
+    {
+        "id": "giodoge",
+        "base": "gio",
+        "quote": "doge"
+    },
+    {
+        "id": "giobtc",
+        "base": "gio",
+        "quote": "btc"
+    },
+    {
+        "id": "rvnbtc",
+        "base": "rvn",
+        "quote": "btc"
+    },
+    {
+        "id": "giousd",
+        "base": "gio",
+        "quote": "usd"
+    },
+    {
+        "id": "giousdt",
+        "base": "gio",
+        "quote": "usdt"
+    },
+    {
+        "id": "gioltc",
+        "base": "gio",
+        "quote": "ltc"
+    },
+    {
+        "id": "xmrusdt",
+        "base": "xmr",
+        "quote": "usdt"
+    },
+    {
+        "id": "zocbtc",
+        "base": "zoc",
+        "quote": "btc"
+    },
+    {
+        "id": "dgbbtc",
+        "base": "dgb",
+        "quote": "btc"
+    },
+    {
+        "id": "dgbusdt",
+        "base": "dgb",
+        "quote": "usdt"
+    },
+    {
+        "id": "xmrbtc",
+        "base": "xmr",
+        "quote": "btc"
+    },
+    {
+        "id": "xvgbtc",
+        "base": "xvg",
+        "quote": "btc"
+    },
+    {
+        "id": "xvgusdt",
+        "base": "xvg",
+        "quote": "usdt"
+    },
+    {
+        "id": "pivxbtc",
+        "base": "pivx",
+        "quote": "btc"
+    },
+    {
+        "id": "pivxusdt",
+        "base": "pivx",
+        "quote": "usdt"
+    },
+    {
+        "id": "esbcbtc",
+        "base": "esbc",
+        "quote": "btc"
+    }
+]

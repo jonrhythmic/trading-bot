@@ -92,6 +92,40 @@ class Bot {
             console.log("Invalid input params");
         }
     }
+    // Display all available coins with positive balance, or spesify a ticker to show available balance
+    balance(coin='') {
+        const url = 'https://graviex.net/webapi/v3/';
+        const uri = 'members/me';
+        const tonce = this.tonce();
+        const ticker = coin;
+
+        //if (coin !== '') { coin = `${ticker}`};
+    
+        const request = `access_key=${config.ACCESS_KEY}&tonce=${tonce}`;
+        const message = `GET|/webapi/v3/${uri}|` + request;
+        const signature = crypto.createHmac('sha256', config.SECRET_KEY).update(message).digest('hex');
+
+        // res.accounts_filtered[0].balance to get the balance of the first object in the list
+        // Yea then u need to iterate through every element in the list and check if the coin is called ltc
+        fetch(url + uri + "?" + request + "&signature=" + signature, {
+            method: 'GET'
+        })
+        .then(res => res.json())
+        .then((res) => {
+            // TODO: Add the possibility to select a custom coin, other list every coin with positive balance
+            res.accounts_filtered.forEach(element => {
+                if (coin !== '' && element.currency === coin) {
+                    console.log("Currency:", element.currency, "\nBalance:", element.balance, "\nLocked coins:", element.locked);
+                } 
+                else if (coin === '') {
+                    if (element.balance > 0.0) {
+                        console.log("Currency:", element.currency, "Balance:", element.balance, "Locked coins:", element.locked);
+                    }
+                }
+            });
+        }) 
+        .catch(err => console.log(err));
+    }
     price = async (coin, fiat='') => {
         if (fiat === '') {
             fiat = "usd";
@@ -157,7 +191,7 @@ class Bot {
         if (limit !== '' && typeof limit !== Number) { entries = `&limit=${limit}`; }
         
         // This is supposed to be trade-id - period=time.now() - 24t? - 1t? - 1min?
-        // let time = new Date().getTime().toString();
+        // let time = new Date().getTime().toJSON();
         // &from=${time}&to=${(time-(60*60*24))}
         // Add timeframe and parse it into 1m, 1h, 1d, 1m, 1y, all!
 
@@ -173,8 +207,6 @@ class Bot {
         .catch(err => console.log(err));
     }
     findMarkets = async () => {
-        let data = [];
-        
         fs.readFile('./data/coins.json', (err, coins) => {
             if (err) {
                 console.log(err);
@@ -198,7 +230,7 @@ class Bot {
                         headers: { 'Content-Type': 'application/json' }
                     });
                     
-                    if (request.ok) {
+                    if (request.ok && request.headers.get('Content-Type') === 'application/json') {
                         const response = await request.json();
 
                         try {
@@ -208,7 +240,7 @@ class Bot {
                                 'quote': response.attributes.quote_unit 
                             };
                             this.markets.push(input);
-                            data = JSON.stringify(this.markets, null, 4);
+                            let data = JSON.stringify(this.markets, null, 4);
                             
                             fs.writeFileSync('./data/markets.json', String(data), /* { flag: 'a' }, */ (err) => {
                                 if (err) { throw err; }
@@ -265,13 +297,14 @@ class Bot {
     // Generate a list of existing markets
     bot.findMarkets();
 
+    bot.balance('gio');
+
     bot.price('dogecoin', 'sats');
     bot.price('litecoin', 'usd');
     bot.price('bitcoin-cash', 'ltc');
             
     do {
         bot.run();
-
     } while (0);
     
 })();
@@ -328,33 +361,12 @@ function order(action, pair, price, amount) {
     return valid ? ({ valid, action, pair, price, amount, method, uri, pair, side }) : valid;    
 };
 
-// Fetch all available trading pairs and store it on a list 
-function selection(first, second) {
-    fetch('https://graviex.net/webapi/v3/markets' + "/" + `${first}${second}`, {
-        method: 'GET', 
-        body: null,
-        headers: {'Content-Type': 'application/json'}
-    })
-    .then(res => res.json())
-    .then(res => console.log(res.attributes.base_unit, res.attributes.quote_unit))
-    .catch(err => console.log(err));
-
-    // Fetch available markets on startup and once every 24h
-    // Compare the available tickers and pairs with the user defined, in demand tickers / pairs: 
-    // ** If a new pair or a new coin the user has selected as in demand, add it a list of in demand coins
-    // ** Re-scan the user defined, in demand tickers / pair once every minute and update the list of coins to focus on
-    
-    /* TODO: 
-        - Find a better name for this function 
-    */
-}
-
 // Display the most recent trades in a spesific pair 
 function trades(pair) {
     const url = 'https://graviex.net/webapi/v3/trades_simple';
 
     fetch(url + `?market=${pair}`, {
-        meothod: 'GET',
+        method: 'GET',
         body: null, 
         headers: {'Content-Type': 'application/json'}
     })
@@ -387,7 +399,7 @@ function cancel(ticker) {
 }
 
 // Display all available coins with positive balance, or spesify a ticker to show available balance
-function balance(ticker, tonce) {
+function balance01(ticker, tonce) {
     // TODO: Problems getting this.tonce to work.
     // TODO: function returns the last 100 transactions
 

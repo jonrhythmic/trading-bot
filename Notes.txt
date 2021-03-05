@@ -11,6 +11,10 @@
 - Improve all fetch() using asyns / await. 
 - Improve the fecth'es so it can be customized easily (refactor the code, dude!)
 - Create a function that does a lookup of coins.json' id vs coingeckos coins/list/"symbol" to make a list of tickers to use for price info.
+- Hello. Date\time is always ANSI format. 
+- ECMA correct way: JSON.stringify({'now': new Date()})
+- new Date().toISOString()
+- There is only one request to get the value of the balances -members/me. it returns the balances for all assets
 
 					      ##############
 					      |  MAINLOOP  |
@@ -71,6 +75,8 @@
 - Implement a try-catch clause in initialize() finally {} to detect errors and shut down getting markets goes wrong
 - Improve the history() to include &to= and &from=
 - Class is labelled by a special internal property: [[FunctionKind]]:"classConstructor" (test for this to see if bot === ok)
+- Test findMarkets() once every 24h
+- Find out how you can add comments into function tooltips (like C++)
 
     /* bid, sell, cancel, cancelAll, etc */
     order(
