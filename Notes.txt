@@ -14,7 +14,8 @@
 - Hello. Date\time is always ANSI format. 
 - ECMA correct way: JSON.stringify({'now': new Date()})
 - new Date().toISOString()
-- There is only one request to get the value of the balances -members/me. it returns the balances for all assets
+- Consider adding Paccoin into the bot!
+- let action in execute_command() is never used! Investigate what it's intended to do.
 
 					      ##############
 					      |  MAINLOOP  |
@@ -27,13 +28,18 @@
 - It's not possible to get user balance or minimum amount for trade pr coin, so make a balance.js and update it using trade history :D
 - Consider generating a new deposit address and scan incoming transactions + trade history to keep an est. balance.
 
+					      ##############
+					      |  STRATEGY  |
+					      ##############
+
+- Volume and trends: see volume and trends.png
 - Strategies: 
 *** Divide the various coins into 'stable' or 'volatile'
 *** Guestimates: 
     - top-5 coins will increase +10% from live price, and drop -15% from top pr week over and over
     - low marketcap altcoin will drop -25% and gain +7% from bottom over and over
     - popular altcoins will increase 10% and drop -15% and run sideways most of the time
-*** Type of trader: diversify, maximalist, 
+*** Type of trader: diversify, maximalist, semimaximalist / semidiversified, 
 *** Per coin type: fish (one of many, small investments), dolphin (pump and dump), whale (tradeintensive highhand, longterm hodler)
 *** Market strategies: bearish (focus on stablecoins vs diversified trading), bullish (focus on diversifying), sideways ()
 *** Set a goal for trading and divide into percent to trade pr option: highhand, week, month, 1k (+85% - +100%), 4k (+100% - 1000%). Base the percent gained on both increase in coin value and increase in amount hodl'd => bullish more percent of trades on +15% and more, bearish more percent of trades on -25% and more 
@@ -46,7 +52,6 @@
 						##########
 
 - Make sure the function names are better planned out!
-- Move the "detect trading pairs" from initialize() into selection.
 - Create function that divides the number of pairs[] normalized by / 100, and make a progressbar instead of printing: Total valid markets: cx
 - Correct the fetch to find valid marketpairs to handle text return. Unexpected token < in JSON at position 0
 - Make a function that cancels all GIO bids around every new hour to maximize dividens
@@ -77,6 +82,10 @@
 - Class is labelled by a special internal property: [[FunctionKind]]:"classConstructor" (test for this to see if bot === ok)
 - Test findMarkets() once every 24h
 - Find out how you can add comments into function tooltips (like C++)
+- Improve balance() to return an error if the value passed in isn't valid (no coin found)
+- Implement this ncurses like Node library to make a simple interface: https://github.com/chjj/blessed
+- convert() is really useless and needs refactoring to handle padding to small numbers (like doge), conversion on even smaller numbers (like graviocoin) and not doing anything on numbers that are valid (like ETH/LTC pairs)
+*** API entry account/history is for withdrawals / deposits, and trades/history is for recent trades! ***
 
     /* bid, sell, cancel, cancelAll, etc */
     order(

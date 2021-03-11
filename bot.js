@@ -1,4 +1,3 @@
-import express, { request, response } from 'express';
 import ini from 'ini';
 import fs from 'fs';
 import crypto from 'crypto';
@@ -6,10 +5,6 @@ import fetch from 'node-fetch';
 import market from './core/market.js';
 // Import the bot configurations
 const config = ini.parse(fs.readFileSync("./config.ini", "utf-8"));
-// Application configurations
-const PORT = process.env.PORT;
-
-const app = express();
 
 class Bot {
     // class properties;
@@ -78,7 +73,7 @@ class Bot {
             let token = this.signature(method, uri, pair, side, price, amount);
             let request = token.request;
             let signature = token.signature;
-            
+
             fetch(url + uri + "?" + request + "&signature=" + signature, {
                 method: method,
                 body: null,
@@ -115,11 +110,11 @@ class Bot {
             // TODO: Add the possibility to select a custom coin, other list every coin with positive balance
             res.accounts_filtered.forEach(element => {
                 if (coin !== '' && element.currency === coin) {
-                    console.log("Currency:", element.currency, "\nBalance:", element.balance, "\nLocked coins:", element.locked);
+                    console.log("Currency:", element.currency.toUpperCase(), "\nAvailable balance:", element.balance, element.currency.toUpperCase(), "\nCoins in order:", element.locked, element.currency.toUpperCase());
                 } 
                 else if (coin === '') {
                     if (element.balance > 0.0) {
-                        console.log("Currency:", element.currency, "Balance:", element.balance, "Locked coins:", element.locked);
+                        console.log("Currency:", element.currency.toUpperCase(), "Available balance:", element.balance, element.currency.toUpperCase(), "Coins in order:", element.locked, element.currency.toUpperCase());
                     }
                 }
             });
@@ -127,31 +122,51 @@ class Bot {
         .catch(err => console.log(err));
     }
     price = async (coin, fiat='') => {
-        if (fiat === '') {
+        if (fiat === '' && fiat !== typeof String) {
             fiat = "usd";
         } 
-        
         // Connect to Coingecko API and fetch live price
-        fetch('https://api.coingecko.com/api/v3/simple/price' + `?ids=${coin}&vs_currencies=${fiat}`, {
-            method: 'GET'
-        })
-        .then(res => res.json())
-        .then(res => {
-            console.log("1", coin, "=", res[coin][fiat] + ` ${fiat}`);
-            
-            let price = res[coin][fiat];
-            let result = this.convert(price, coin, fiat);
+        const request = await fetch('https://api.coingecko.com/api/v3/simple/price' + `?ids=${coin}&vs_currencies=${fiat}`, {
+            method: 'GET',
+            body: null,
+            headers: {'Content-Type': 'application/json'}
+        });
 
-            // let five = 0.95;
-            // let ten = 0.9;
-            // let twentyfive = 0.75;
-            // let fifty = 0.5;
-            // console.log("5% lower", (price * five).toFixed(8));
-            // console.log("10% lower", (price * ten).toFixed(8));
-            // console.log("25% lower", (price * twentyfive).toFixed(8));
-            // console.log("50% lower", (price * fifty).toFixed(8));
-        })
-        .catch(err => console.log(err));
+        if (request.ok) {
+            const response = await request.json();
+
+            console.log("1", coin, "=", response[coin][fiat] + ` ${fiat}`);
+            
+            try {
+                let price = response[coin][fiat];
+                console.log(price);
+                let result;
+
+                // Test if the price is lower than e-6 (js will convert that to scientific notation)
+                if (price < 0.000001) {
+                    // Convert small numbers into real numbers
+                    result = this.convertENotationToNumber(price);
+                } else {
+                    // Otherwise test if number needs to be converted by adding leading zeros
+                    result = this.convert(price, coin, fiat);
+                }
+                
+                // let five = 0.95;
+                // let ten = 0.9;
+                // let twentyfive = 0.75;
+                // let fifty = 0.5;
+                // console.log("5% lower", (price * five).toFixed(8));
+                // console.log("10% lower", (price * ten).toFixed(8));
+                // console.log("25% lower", (price * twentyfive).toFixed(8));
+                // console.log("50% lower", (price * fifty).toFixed(8));
+                return result;
+            }
+            catch (error) { 
+                console.log("Unable to retreive price!"); 
+            }
+        } else {
+            console.log("Unable to connect to coingecko' API!");
+        }
     }
     exchangeInfo = async () => {
         fetch('https://api.coingecko.com/api/v3/exchanges/graviex', {
@@ -182,6 +197,23 @@ class Bot {
         // Remove decimal values behind the comma and return conversion
         return String(num.toFixed(0)).padStart(10, '0.0000000');
     }
+    convertENotationToNumber(num) {
+        // Thanks to u/iguessitsokaythen for this helping with this methid
+        const str = num.toString()
+        const match = str.match(/^(\d+)(\.(\d+))?[eE]([-\+]?\d+)$/)
+        if (!match) return str //number was not e notation or toString converted
+        // we parse the e notation as (integer).(tail)e(exponent)
+        const [, integer,, tail, exponentStr ] = match
+        const exponent = Number(exponentStr)
+        const realInteger = integer + (tail || '')
+        if (exponent > 0) {
+            const realExponent = Math.abs(exponent + integer.length)
+            return realInteger.padEnd(realExponent, '0')
+        } else {
+            const realExponent = Math.abs(exponent - (tail?.length || 0))
+            return '0.'+ realInteger.padStart(realExponent, '0')
+        }
+    }
     history = async (coin='', limit='') => { 
         let uri = 'trades/history';
         let tonce = this.tonce();
@@ -189,13 +221,14 @@ class Bot {
         if (market !== '' && (typeof null || typeof undefined)) { market = `&market=${coin}`; }
         let entries = limit;
         if (limit !== '' && typeof limit !== Number) { entries = `&limit=${limit}`; }
+        const time = Math.floor(Date.now() / 1000) + '000'; // Must be spesified in time since 1.1.1970 + adding three trailing zeros
         
         // This is supposed to be trade-id - period=time.now() - 24t? - 1t? - 1min?
-        // let time = new Date().getTime().toJSON();
-        // &from=${time}&to=${(time-(60*60*24))}
+        // let time = new Date().getTime().toJSON(); Must be spesified in time since 1.1.1970
+        // &from=${time-(60*60*24)}&to=${(time)} / &to=${(time)}&from=${time-(60*60*24)} // 
         // Add timeframe and parse it into 1m, 1h, 1d, 1m, 1y, all!
-
-        const request = `access_key=${config.ACCESS_KEY}${entries}${market}&order_by=desc&tonce=${tonce}`; 
+        
+        const request = `access_key=${config.ACCESS_KEY}${entries}${market}&order_by=desc&tonce=${tonce}`;
         const message = `GET|/webapi/v3/${uri}|` + request;
         const signature = crypto.createHmac('sha256', config.SECRET_KEY).update(message).digest('hex');
         
@@ -296,37 +329,33 @@ class Bot {
     bot.initialize(bot);
     // Generate a list of existing markets
     bot.findMarkets();
-
-    bot.balance('gio');
+    
+    //bot.balance('usdt');
 
     bot.price('dogecoin', 'sats');
-    bot.price('litecoin', 'usd');
+    bot.price('graviocoin', 'btc');
     bot.price('bitcoin-cash', 'ltc');
-            
+    
+    bot.execute_command(
+        order,
+        [
+            "sell",
+            "giobtc",
+            "current",
+            100
+        ]
+    );
+
     do {
         bot.run();
     } while (0);
     
 })();
 
-// Add generic middleware to express
-app.use((req, res, next) => {
-    next();
-});
-
-// NOTE: use these functions instead of the once displayed in the video (for req.body)
-app.use(express.urlencoded({extended: false}));
-app.use(express.json());
-// New syntax for req.header === req.headers
-
-app.get('/', (req, res) => { 
-    res.send("Getting root area");
-});
-
-app.listen(PORT || 3000);
-
 // Utility function to create an order
-function order(action, pair, price, amount) {
+async function order(action, pair, price, amount) {
+    // GET /webapi/v3/orders market=all	Ability to get all placed orders for all markets - can be user to parse out the results you need to handle
+
     let valid = false;
     let method = '';
     let uri = '';
@@ -349,8 +378,48 @@ function order(action, pair, price, amount) {
     }
 
     if (price === 'current') {
-        // Connect to the API and get current price 
-        // Alt. use a thirdparty API and get the realtime price of the ticker, then place a sale at that price
+        let base; 
+        let quote;
+
+        // Read through markets.json and send the base / quote into the price function.
+        const list = fs.readFileSync('./data/markets.json');
+        const coins = JSON.parse(list);
+
+        // convert the pair into two tickers
+        coins.forEach(coin => {
+            if (pair === coin.id) {
+                // Create a lookup for the name on coingecko to be able to use price function
+                const ticker = fs.readFileSync('./data/coingecko.json');
+                const names = JSON.parse(ticker);
+                
+                // Find the base / quote price ratio
+                names.forEach(ticker => {
+                    // Find the correct name for from-value to send to coingecko' price API 
+                    try {
+                        if (coin.base === ticker.symbol) {
+                            // console.log("Base", ticker.id);
+                            // Check if the base name contains spaces
+                            if (/\s/.test(base)) {
+                                base = base.replace('/ /g', '-');
+                            }
+                            base = ticker.id;
+                        }
+                        // Find the correct ticker for in-value to send to coingecko' price API
+                        if (coin.quote === ticker.symbol) {
+                            // console.log("Quote", ticker.symbol);
+                            quote = ticker.symbol;
+                        }
+                    }
+                    catch (error) {
+                        console.log("Ran into an error!");
+                    }
+                });
+            }
+        });
+        // Send the values to coingecko to extract the correct price
+        if (base !== undefined && quote !== undefined) {
+            price = await this.price(base, quote);
+        }
     }
 
     if (amount === 'all') {
