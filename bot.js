@@ -33,7 +33,7 @@ class Bot {
                 process.exit(-1);
             }
             else {
-                process.stdout.write(`Status: \x1b[36mGraviex trading-bot launched successfully!\x1b[0m\n`);
+                process.stdout.write(`\x1b[37;1mStatus:\x1b[0m graviex-bot launched \x1b[32msuccessfully\x1b[0m!\n`);
             }
         } catch (error) {
             // Re-throw the error unchanged
@@ -45,7 +45,7 @@ class Bot {
             // console.log(obj instanceof Bot);            // true
             // console.log(obj instanceof constructor);    // true
             // If a finally returns a value it becomes the return value of the entire try-catch-finally block regardless of any return from try-catch
-            return process.stdout.write("\x1b[37;1mversion\x1b[0m <0. 0. 0> \x1b[35malpha\x1b[0m\r\n");
+            return process.stdout.write("\x1b[37;1mBot version\x1b[0m <0. 1. 0> \x1b[33mbeta\x1b[0m\r\n");
         }
     }
     tonce() { return new Date().getTime(); }
@@ -58,8 +58,8 @@ class Bot {
         
         return { signature, request };
     }
-    execute_command(callback, args) { 
-        let result = callback.apply(this, args);
+    execute_command = async (callback, args) => { 
+        let result = await callback.apply(this, args);
         const url = 'https://graviex.net/webapi/v3/';
         
         if (result.valid === true) {
@@ -74,18 +74,37 @@ class Bot {
             let request = token.request;
             let signature = token.signature;
 
-            fetch(url + uri + "?" + request + "&signature=" + signature, {
+            // fetch(url + uri + "?" + request + "&signature=" + signature, {
+            //     method: method,
+            //     body: null,
+            //     headers: {'Content-Type': 'application/json'}
+            // })
+            // .then(res => res.json())
+            // .then(res => console.log("Order created:", res.market, res.side, res.price, res.volume))
+            // .catch(err => console.log(err));
+
+            const req = await fetch(url + uri + "?" + request + "&signature=" + signature, {
                 method: method,
                 body: null,
                 headers: {'Content-Type': 'application/json'}
-            })
-            .then(res => res.json())
-            .then(res => console.log(res))
-            .catch(err => console.log(err));
+            });
+
+            if (req.ok) {
+                const res = await req.json();
+
+                try {
+                    console.log("Order created:", res.market, res.side, res.price, res.volume);
+                }
+                catch (error) {
+                    console.log("Error creating order!");
+                }
+            } else if (!req.ok) {
+                console.log(`Unable to create order: insufficient \x1b[37;1m${result.pair}\x1b[0m balance!`);
+            }
         } 
         else if (result.valid === false) {
             console.log("Invalid input params");
-        }
+        } 
     }
     // Display all available coins with positive balance, or spesify a ticker to show available balance
     balance(coin='') {
@@ -93,15 +112,11 @@ class Bot {
         const uri = 'members/me';
         const tonce = this.tonce();
         const ticker = coin;
-
-        //if (coin !== '') { coin = `${ticker}`};
     
         const request = `access_key=${config.ACCESS_KEY}&tonce=${tonce}`;
         const message = `GET|/webapi/v3/${uri}|` + request;
         const signature = crypto.createHmac('sha256', config.SECRET_KEY).update(message).digest('hex');
 
-        // res.accounts_filtered[0].balance to get the balance of the first object in the list
-        // Yea then u need to iterate through every element in the list and check if the coin is called ltc
         fetch(url + uri + "?" + request + "&signature=" + signature, {
             method: 'GET'
         })
@@ -110,10 +125,12 @@ class Bot {
             // TODO: Add the possibility to select a custom coin, other list every coin with positive balance
             res.accounts_filtered.forEach(element => {
                 if (coin !== '' && element.currency === coin) {
+                    // TODO: Convert this into a return statement
                     console.log("Currency:", element.currency.toUpperCase(), "\nAvailable balance:", element.balance, element.currency.toUpperCase(), "\nCoins in order:", element.locked, element.currency.toUpperCase());
                 } 
                 else if (coin === '') {
                     if (element.balance > 0.0) {
+                        // TODO: Convert this into a return statement
                         console.log("Currency:", element.currency.toUpperCase(), "Available balance:", element.balance, element.currency.toUpperCase(), "Coins in order:", element.locked, element.currency.toUpperCase());
                     }
                 }
@@ -134,12 +151,10 @@ class Bot {
 
         if (request.ok) {
             const response = await request.json();
-
-            console.log("1", coin, "=", response[coin][fiat] + ` ${fiat}`);
+            // console.log("1", coin, "=", response[coin][fiat] + ` ${fiat}`);
             
             try {
                 let price = response[coin][fiat];
-                console.log(price);
                 let result;
 
                 // Test if the price is lower than e-6 (js will convert that to scientific notation)
@@ -150,15 +165,6 @@ class Bot {
                     // Otherwise test if number needs to be converted by adding leading zeros
                     result = this.convert(price, coin, fiat);
                 }
-                
-                // let five = 0.95;
-                // let ten = 0.9;
-                // let twentyfive = 0.75;
-                // let fifty = 0.5;
-                // console.log("5% lower", (price * five).toFixed(8));
-                // console.log("10% lower", (price * ten).toFixed(8));
-                // console.log("25% lower", (price * twentyfive).toFixed(8));
-                // console.log("50% lower", (price * fifty).toFixed(8));
                 return result;
             }
             catch (error) { 
@@ -291,6 +297,7 @@ class Bot {
     // Bots mainloop 
     run = async () => {
         try {
+
             // Iterate the main loop in timed steps to avoid flooding the API
             setInterval(() => {
                 let type = 'semivolatile';
@@ -309,6 +316,7 @@ class Bot {
                         console.log(`Current iteration yealded x new buy / sells, [...]`);
                 }
             }, 1000);
+
         }
         finally {
             // Users closing the application
@@ -353,7 +361,7 @@ class Bot {
 })();
 
 // Utility function to create an order
-async function order(action, pair, price, amount) {
+async function order (action, pair, price, amount) {
     // GET /webapi/v3/orders market=all	Ability to get all placed orders for all markets - can be user to parse out the results you need to handle
 
     let valid = false;
@@ -445,11 +453,10 @@ function trades(pair) {
 }
 
 // Display the depth on a spesific pair
-function depth(pair, limit='', order='') {
+function depth(pair, limit='') {
     const url = 'https://graviex.net/webapi/v3/depth';
-    if (limit !== '') { limit = `&limit=${limit}`; } 
-    if (order !== '') { order = `&order=${order}`; } 
-    const request = `?market=${pair}${limit}${order}`;
+    if (limit !== '') { limit = `&limit=${limit}`; }
+    const request = `?market=${pair}${limit}&order=desc`;
 
     fetch(url + request, {
         method: 'GET', 
@@ -467,27 +474,29 @@ function cancel(ticker) {
     // Based on order, orders and order_book
 }
 
-// Display all available coins with positive balance, or spesify a ticker to show available balance
-function balance01(ticker, tonce) {
-    // TODO: Problems getting this.tonce to work.
-    // TODO: function returns the last 100 transactions
+const trends = async () => {
 
-    const url = 'https://graviex.net/webapi/v3/';
-    const uri = 'account/history';
-    //const tonce = this.tonce();
-    const request = `access_key=${config.ACCESS_KEY}&tonce=${tonce}&currency=${ticker}`; // TODO: limit (default 100), type (withdraw / deposit), from (from date/time), to (to date/time), page (), order_by
-    const message = `GET|/webapi/v3/${uri}|` + request;
-    const signature = crypto.createHmac('sha256', config.SECRET_KEY).update(message).digest('hex');
+    let price;
+    let volume; 
+    let trend; 
 
-    fetch(url + uri + "?" + request + "&signature=" + signature, {
-        method: 'GET',
-        body: null,
-        headers: {'Content-Type': 'application/json'}
-    })
-    .then(res => res.json())
-    .then(res => console.log(res))
-    .catch(err => console.log(err));
-}
+    /*                     VOLUME AND TREND                    */
+    // __________________________________________________________
+    // |_______|___PRICE___|___VOLUME______|___INTERPRETATION___|
+    // |UP-    |   Rising  |   Rising      | Trend is strong    |
+    // |TREND  |   Rising  |   Falling     | Trend is weakening |
+    // |       |   Rising  |   High in the | Trend is weakening |
+    // |       |           |   pullbacks   |                    |
+    // +-------------------+---------------+--------------------+
+    // | DOWN- |   Falling |   Rising      | Trend is strong    |
+    // | TREND |   Falling |   Falling     | Trend is weakening |
+    // |       |   Falling |   High in the | Trend is weakening |
+    // |       |           |   pullbacks   |                    |
+    // +-------+-----------+---------------+--------------------+
+
+    return;
+
+};
 
 // Error logging
 function log(error) {

@@ -3,30 +3,31 @@
 					      ##############
 
 - Track "recent trades" to make sure to be able to send new money into the queue.
-- Find out if you add bchdoge and ensure that the price is correct!
 - IMPLEMENT THE STRATEGY (ON A TRENDLINE) TO BE USED TO DETERMINE WHAT TO DO IN THE BOT (percent gain / lower + current trend: bearish / bullish / sideways / hodl)
-- Make sure you test the correct base_unit / quote_unit before finding the price! 
-- Handle the process of collecting realtime prices using coingecko by implementing a json-file that stores valid tickers
-- Complete the order() if (price === "current") to handle the basic strategic bid / sell value
 - Improve all fetch() using asyns / await. 
 - Improve the fecth'es so it can be customized easily (refactor the code, dude!)
-- Create a function that does a lookup of coins.json' id vs coingeckos coins/list/"symbol" to make a list of tickers to use for price info.
 - Hello. Date\time is always ANSI format. 
 - ECMA correct way: JSON.stringify({'now': new Date()})
 - new Date().toISOString()
-- Consider adding Paccoin into the bot!
 - let action in execute_command() is never used! Investigate what it's intended to do.
-
+- Implement a price function that generates: 
+  // let five = 0.95;
+  // let ten = 0.9;
+  // let twentyfive = 0.75;
+  // let fifty = 0.5;
+  // console.log("5% lower", (price * five).toFixed(8));
+  // console.log("10% lower", (price * ten).toFixed(8));
+  // console.log("25% lower", (price * twentyfive).toFixed(8));
+  // console.log("50% lower", (price * fifty).toFixed(8));
+- Improve execute_order()' else if (!req.ok) with proper errormsg for when you have too few coins or other problems.
 					      ##############
 					      |  MAINLOOP  |
 					      ##############
 
 - Generate an setInterval to return a callback ( *** check the max amount of calls to the API graviex allows *** )
-- Plan out a scheduler and a job queue function 
+- Plan out a scheduler (like a calendar, days of the week, month (march is bad for btc), etc) and a job queue (basically this means promises / also called microtask queue) function 
 - Plan out a post-processing method to record and display the details
 - Create a configuration-sheet in html the user easily can configure the bot and it's focuspoints
-- It's not possible to get user balance or minimum amount for trade pr coin, so make a balance.js and update it using trade history :D
-- Consider generating a new deposit address and scan incoming transactions + trade history to keep an est. balance.
 
 					      ##############
 					      |  STRATEGY  |
@@ -73,11 +74,9 @@
 - Make a balance() to retrieve your balance stored on graivex, show available and inOrders.
 - Make a MainLoop the uses setInterval(() => {}, MAX_AMOUNT_OF_CONNECTIONS)
 - Research if you can collect faucet using the API - NO, IT'S NOT POSSIBLE!
-- Implement an option to select current (realtime) price and place a buy / sell based on it in order()
 - Implement an option to generate an "all" coins dump strategy for unwanted coins. Should not generate loses, so handle it
 - Implement a scraper for /r/WallStreetBets to get on the hype early?
 - Implement some kind of strategy based on realtime data, bullish = HODL top 5, bearish = HODL stablecoins, sideways = +/-5%
-- Implement a try-catch clause in initialize() finally {} to detect errors and shut down getting markets goes wrong
 - Improve the history() to include &to= and &from=
 - Class is labelled by a special internal property: [[FunctionKind]]:"classConstructor" (test for this to see if bot === ok)
 - Test findMarkets() once every 24h
@@ -85,6 +84,7 @@
 - Improve balance() to return an error if the value passed in isn't valid (no coin found)
 - Implement this ncurses like Node library to make a simple interface: https://github.com/chjj/blessed
 - convert() is really useless and needs refactoring to handle padding to small numbers (like doge), conversion on even smaller numbers (like graviocoin) and not doing anything on numbers that are valid (like ETH/LTC pairs)
+- Consider adding Paccoin into the bot!
 *** API entry account/history is for withdrawals / deposits, and trades/history is for recent trades! ***
 
     /* bid, sell, cancel, cancelAll, etc */
@@ -105,6 +105,8 @@
 EXAMPLES OF README.MD WITH METAINFO REGARDING STATUS: 
 - https://raw.githubusercontent.com/psf/black/master/README.md
 - https://raw.githubusercontent.com/dbohdan/classless-css/master/README.md
+EXAMPLE OF README.MD WITH KEYBOARD SHORTCUT OPTIONS: 
+- https://raw.githubusercontent.com/slap-editor/slap/master/README.md
 
 NICE VISUAL STUDIO THEME: 
 - https://marketplace.visualstudio.com/items?itemName=Larxx.github-blue
